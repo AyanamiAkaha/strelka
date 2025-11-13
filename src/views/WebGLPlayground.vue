@@ -123,7 +123,7 @@ const startRenderLoop = () => {
           gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_aspect'), aspect)
           gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_near'), camera.value.near)
           gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_far'), camera.value.far)
-          gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_pointSize'), 4.0)
+          gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_pointSize'), 10.0)
           gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_hilighted_cluster'), hilightedCluster)
           
           // Bind position buffer

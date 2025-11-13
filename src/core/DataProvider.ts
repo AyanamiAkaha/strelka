@@ -33,16 +33,20 @@ export class DataProvider {
    * @returns PointData object with positions, cluster IDs, and count
    */
   static getPointData(): PointData {
-    const ppc = 4000;
+    const cScale = 20;
+    const ppc = 10000;
+    // const ppc = 5;
     const clusterCenters: Array<[number, number, number]> = [
-      [-2, -1, 1],
-      [0, 3, -2],
-      [2, 0, 0],
+      [-5, -2, 3],
+      [0, -7, -7],
+      [5, 7, 0],
+      [-3, 7, 2],
     ]
     const clusterShapes: Array<[number, number, number]> = [
       [0.5, 0.5, 0.5],
       [0.3, 0.7, 0.3],
       [0.6, 0.4, 0.6],
+      [0.4, 0.6, 0.4]
     ]
     
     const positions = new Float32Array(ppc * clusterCenters.length * 3)
@@ -50,12 +54,20 @@ export class DataProvider {
 
     for (let i = 0; i < ppc * clusterCenters.length; i++) {
       const clusterId = Math.floor(Math.random() * clusterCenters.length)
-      const z = clusterCenters[clusterId]
+      const zero = clusterCenters[clusterId]
       const s = clusterShapes[clusterId]
-      const point = [
-        z[0] + (Math.random() - 0.5) * s[0],
-        z[1] + (Math.random() - 0.5) * s[1],
-        z[2] + (Math.random() - 0.5) * s[2],
+      const theta = Math.random() * Math.PI * 2
+      const phi = Math.random() * Math.PI * 2
+      const r = Math.cbrt(Math.random()) // Uniform distribution in sphere
+
+      const x = r * s[0] * Math.sin(phi) * Math.cos(theta) * cScale
+      const y = r * s[1] * Math.sin(phi) * Math.sin(theta) * cScale
+      const z = r * s[2] * Math.cos(phi) * cScale
+      
+      const point: [number, number, number] = [
+        zero[0] + x,
+        zero[1] + y,
+        zero[2] + z,
       ]
       positions[i * 3] = point[0]
       positions[i * 3 + 1] = point[1]

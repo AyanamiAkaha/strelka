@@ -170,6 +170,7 @@ export class ShaderManager {
         uniform float u_hilighted_cluster;
 
         varying float v_isHilighted;
+        varying float v_revCamDist;
 
         // Corrected GPU matrix calculation functions
         mat4 perspective(float fov, float aspect, float near, float far) {
@@ -223,17 +224,21 @@ export class ShaderManager {
           mat4 projection = perspective(u_fov, u_aspect, u_near, u_far);
           mat4 view = lookAt(u_cameraPosition, target, up);
           mat4 mvp = projection * view;
+
+          float revCamDistance = 1.0 - clamp(length(u_cameraPosition - position)/100.0, 0.0, 1.0);
           
           gl_Position = mvp * vec4(position, 1.0);
-          gl_PointSize = u_pointSize;
+          gl_PointSize = clamp(u_pointSize * revCamDistance, 4.0, 50.0);
 
           v_isHilighted = abs(a_clusterId - u_hilighted_cluster) < 0.4 ? 1.0 : 0.0;
+          v_revCamDist = revCamDistance;
         }
       `,
       fragment: `
         precision mediump float;
 
         varying float v_isHilighted;
+        varying float v_revCamDist;
 
         void main() {
           vec2 coord = gl_PointCoord - vec2(0.5);
@@ -243,12 +248,11 @@ export class ShaderManager {
             discard;
           }
 
-          float intensity = 0.5 - distance * 0.5;
-          float glow = 1.0 - distance * 4.0;
-          glow = max(glow, 0.0);
+          float intensity = 1.0 - distance * 2.0;
 
-          vec3 color = v_isHilighted > 0.5 ? vec3(1.0, 0.1, 0) : vec3(1.0);
-          color = color * intensity + vec3(glow * 0.3);
+          vec3 c_base = v_isHilighted > 0.5 ? vec3(1.0, 0.5, 0.2) : vec3(1.0);
+          vec3 c_far = v_isHilighted > 0.5 ? vec3(0.1, 0.0, 0.1) : vec3(0.0, 0.0, 0.3);
+          vec3 color = mix(c_far, c_base, v_revCamDist);
           
           gl_FragColor = vec4(color, intensity);
         }
