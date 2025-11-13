@@ -110,10 +110,11 @@ export class Camera {
     const speed = this.moveSpeed * deltaTime * (this.controls.fast ? this.fastMoveMultiplier : 1)
     
     // Calculate movement direction based on camera rotation
+    // Match the shader's getForwardVector calculation exactly
     const forward = new Vec3(
-      Math.sin(this.rotation.y) * Math.cos(this.rotation.x),
+      Math.cos(this.rotation.x) * Math.sin(this.rotation.y),
       -Math.sin(this.rotation.x),
-      Math.cos(this.rotation.y) * Math.cos(this.rotation.x)
+      -Math.cos(this.rotation.x) * Math.cos(this.rotation.y)
     )
     
     const right = new Vec3(
@@ -124,12 +125,12 @@ export class Camera {
     
     const up = new Vec3(0, 1, 0)
     
-    // Apply movement
+    // Apply movement - forward/backward moves in camera's look direction
     if (this.controls.forward) {
-      this.position = Vec3.subtract(this.position, Vec3.multiply(forward, speed))
+      this.position = Vec3.add(this.position, Vec3.multiply(forward, speed))
     }
     if (this.controls.backward) {
-      this.position = Vec3.add(this.position, Vec3.multiply(forward, speed))
+      this.position = Vec3.subtract(this.position, Vec3.multiply(forward, speed))
     }
     if (this.controls.right) {
       this.position = Vec3.add(this.position, Vec3.multiply(right, speed))
@@ -175,9 +176,9 @@ export class Camera {
    */
   getForward(): Vec3 {
     return new Vec3(
-      Math.sin(this.rotation.y) * Math.cos(this.rotation.x),
+      Math.cos(this.rotation.x) * Math.sin(this.rotation.y),
       -Math.sin(this.rotation.x),
-      Math.cos(this.rotation.y) * Math.cos(this.rotation.x)
+      -Math.cos(this.rotation.x) * Math.cos(this.rotation.y)
     )
   }
 
