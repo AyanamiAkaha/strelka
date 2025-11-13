@@ -227,7 +227,7 @@ export class ShaderManager {
           gl_Position = mvp * vec4(position, 1.0);
           gl_PointSize = u_pointSize;
 
-          v_isHilighted = (a_clusterId == u_hilighted_cluster) ? 1.0 : 0.0;
+          v_isHilighted = abs(a_clusterId - u_hilighted_cluster) < 0.4 ? 1.0 : 0.0;
         }
       `,
       fragment: `
@@ -243,13 +243,12 @@ export class ShaderManager {
             discard;
           }
 
-          float intensity = 1.0 - distance * 0.5;
-          float glow = 1.0 - distance * 2.0;
+          float intensity = 0.5 - distance * 0.5;
+          float glow = 1.0 - distance * 4.0;
           glow = max(glow, 0.0);
 
-          // vec3 base = v_isHilighted > 0.5 ? vec3(1.0, 0.5, 0.2) : vec3(1.0);
-          // vec3 color = base * intensity + vec3(glow * 0.3);
-          vec3 color = vec3(1.0);
+          vec3 color = v_isHilighted > 0.5 ? vec3(1.0, 0.1, 0) : vec3(1.0);
+          color = color * intensity + vec3(glow * 0.3);
           
           gl_FragColor = vec4(color, intensity);
         }

@@ -137,7 +137,6 @@ const startRenderLoop = () => {
           const clusterIdLocation = gl.getAttribLocation(shaderProgram, 'a_clusterId')
           
           if (clusterIdLocation === -1) {
-            console.log('asdf');
             // ignore to not spam logs. It will work once we use the attribute
           } else {
             gl.enableVertexAttribArray(clusterIdLocation)
@@ -171,8 +170,6 @@ const setupShaders = (gl: WebGL2RenderingContext | WebGLRenderingContext) => {
   shaderManager = new ShaderManager(gl)
   
   // Use debug shaders for testing - switch back to getGPUMatrixShaders() once working
-  // const shaderSource = shaderManager.getDebugShaders()
-  // const shaderSource = shaderManager.getSimplePerspectiveShaders()
   const shaderSource = shaderManager.getGPUMatrixShaders()
   
   const compiledShader = shaderManager.createShaderProgram(shaderSource, 'gpuMatrix')

@@ -126,10 +126,10 @@ export class Camera {
     
     // Apply movement
     if (this.controls.forward) {
-      this.position = Vec3.add(this.position, Vec3.multiply(forward, speed))
+      this.position = Vec3.subtract(this.position, Vec3.multiply(forward, speed))
     }
     if (this.controls.backward) {
-      this.position = Vec3.subtract(this.position, Vec3.multiply(forward, speed))
+      this.position = Vec3.add(this.position, Vec3.multiply(forward, speed))
     }
     if (this.controls.right) {
       this.position = Vec3.add(this.position, Vec3.multiply(right, speed))
