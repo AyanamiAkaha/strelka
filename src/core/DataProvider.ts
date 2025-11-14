@@ -32,21 +32,23 @@ export class DataProvider {
    * 
    * @returns PointData object with positions, cluster IDs, and count
    */
-  static getPointData(): PointData {
+  static getPointData(pointsPerCluster: number): PointData {
     const cScale = 20;
-    const ppc = 10000;
+    const ppc = pointsPerCluster;
     // const ppc = 5;
     const clusterCenters: Array<[number, number, number]> = [
       [-5, -2, 3],
       [0, -7, -7],
       [5, 7, 0],
       [-3, 7, 2],
+      [-0, 0, 0],
     ]
     const clusterShapes: Array<[number, number, number]> = [
       [0.5, 0.5, 0.5],
       [0.3, 0.7, 0.3],
       [0.6, 0.4, 0.6],
-      [0.4, 0.6, 0.4]
+      [0.4, 0.6, 0.4],
+      [3, 3, 3]
     ]
     
     const positions = new Float32Array(ppc * clusterCenters.length * 3)

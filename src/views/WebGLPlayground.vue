@@ -24,13 +24,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import WebGLCanvas from '@/components/WebGLCanvas.vue'
 import ControlsOverlay from '@/components/ControlsOverlay.vue'
 import DebugInfo from '@/components/DebugInfo.vue'
 import { Camera } from '@/core/Camera'
-import { DataProvider } from '@/core/DataProvider'
+import { DataProvider, PointData } from '@/core/DataProvider'
 import { ShaderManager } from '@/core/ShaderManager'
+
+import { highlightedCluster, ppc } from '@/composables/settings'
 
 console.log('WebGLPlayground script setup running...')
 
@@ -46,24 +48,24 @@ let lastFpsTime = 0
 let shaderProgram: WebGLProgram | null = null
 let positionBuffer: WebGLBuffer | null = null
 let clusterIdBuffer: WebGLBuffer | null = null
-let pointData: any = null
+let pointData: PointData | null = null
 let shaderManager: ShaderManager | null = null
+let glCache: WebGL2RenderingContext | WebGLRenderingContext
+
+watch(ppc, () => regenPoints())
 
 const onWebGLReady = (gl: WebGL2RenderingContext | WebGLRenderingContext) => {
-  console.log('WebGL ready:', gl)
   camera.value = new Camera()
-  pointData = DataProvider.getPointData()
-  pointCount.value = pointData.positions.length / 3
-  
-          console.log('Point count:', pointCount.value)
-  console.log('First few points:', pointData.positions.slice(0, 9))
-  console.log('Camera position:', camera.value.position)
-  console.log('Camera rotation:', camera.value.rotation)
-  console.log('Camera FOV:', camera.value.fov)
-  console.log('Camera near/far:', camera.value.near, camera.value.far)  // Setup WebGL rendering
+  glCache = gl
+  regenPoints()
   setupShaders(gl)
-  setupBuffers(gl)
   startRenderLoop()
+}
+
+const regenPoints = () => {
+  pointData = DataProvider.getPointData(ppc.value)
+  pointCount.value = pointData.positions.length / 3
+  setupBuffers(glCache)
 }
 
 const onWebGLError = (errorMessage: string) => {
@@ -114,8 +116,6 @@ const startRenderLoop = () => {
           // Set camera uniforms for GPU matrix calculation
           const canvas = canvasRef.value.canvasElement
           const aspect = canvas ? canvas.width / canvas.height : 1.0
-
-          const hilightedCluster = 'hilightedCluster' in window ? Number(window.hilightedCluster) : -1;
           
           gl.uniform3fv(gl.getUniformLocation(shaderProgram, 'u_cameraPosition'), [camera.value.position.x, camera.value.position.y, camera.value.position.z])
           gl.uniform2fv(gl.getUniformLocation(shaderProgram, 'u_cameraRotation'), [camera.value.rotation.x, camera.value.rotation.y])
@@ -124,7 +124,7 @@ const startRenderLoop = () => {
           gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_near'), camera.value.near)
           gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_far'), camera.value.far)
           gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_pointSize'), 10.0)
-          gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_hilighted_cluster'), hilightedCluster)
+          gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_hilighted_cluster'), highlightedCluster.value)
           
           // Bind position buffer
           gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
@@ -182,11 +182,11 @@ const setupShaders = (gl: WebGL2RenderingContext | WebGLRenderingContext) => {
 const setupBuffers = (gl: WebGL2RenderingContext | WebGLRenderingContext) => {
   positionBuffer = gl.createBuffer()
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
-  gl.bufferData(gl.ARRAY_BUFFER, pointData.positions, gl.STATIC_DRAW)
+  gl.bufferData(gl.ARRAY_BUFFER, pointData!.positions, gl.STATIC_DRAW)
   
   clusterIdBuffer = gl.createBuffer()
   gl.bindBuffer(gl.ARRAY_BUFFER, clusterIdBuffer)
-  gl.bufferData(gl.ARRAY_BUFFER, pointData.clusterIds, gl.STATIC_DRAW)
+  gl.bufferData(gl.ARRAY_BUFFER, pointData!.clusterIds, gl.STATIC_DRAW)
 }
 
 onMounted(() => {
