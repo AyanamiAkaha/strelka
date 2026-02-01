@@ -53,11 +53,11 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Plans**: 5 plans (in 4 waves)
 
-- [ ] 01.1-01-PLAN.md — Add gl-matrix dependency and export vec3/quat from Math.ts
-- [ ] 01.1-02-PLAN.md — Replace Camera.ts Vec3 with gl-matrix vec3
-- [ ] 01.1-03-PLAN.md — Implement quaternion-based rotation in Camera.ts
-- [ ] 01.1-04-PLAN.md — Update shader integration for quaternion camera
-- [ ] 01.1-05-PLAN.md — Verify quaternion camera eliminates gimbal lock
+- [x] 01.1-01-PLAN.md — Add gl-matrix dependency and export vec3/quat from Math.ts
+- [x] 01.1-02-PLAN.md — Replace Camera.ts Vec3 with gl-matrix vec3
+- [x] 01.1-03-PLAN.md — Implement quaternion-based rotation in Camera.ts
+- [x] 01.1-04-PLAN.md — Update shader integration for quaternion camera
+- [x] 01.1-05-PLAN.md — Verify quaternion camera eliminates gimbal lock
 
 ### Phase 2: JSON Data Loader
 
@@ -112,7 +112,7 @@ Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 |  1. Camera Rotation Fix | 3/3 | Complete | 2026-02-02 |
-|  1.1. Implement Quaternion-Based Camera | 0/5 | Not started | - |
+|  1.1. Implement Quaternion-Based Camera | 5/5 | Complete | 2026-02-02 |
 |  2. JSON Data Loader | 0/TBD | Not started | - |
 |  3. SQLite Data Loader | 0/TBD | Not started | - |
 |  4. Data Source Toggle & Error Display | 0/TBD | Not started | - |

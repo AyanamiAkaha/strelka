@@ -9,8 +9,8 @@ Requirements for initial data loading milestone. Each maps to roadmap phases.
 
 ### Camera Controls
 
-- [ ] **CAM-01**: User can rotate camera in correct direction on all axes (fix Euler rotation axis signs)
-- [ ] **CAM-02**: Coordinate system documented in code (Y-up, right-handed WebGL conventions)
+- [x] **CAM-01**: User can rotate camera in correct direction on all axes (fix Euler rotation axis signs)
+- [x] **CAM-02**: Coordinate system documented in code (Y-up, right-handed WebGL conventions)
 
 ### Data Loading - JSON
 
@@ -34,7 +34,7 @@ Deferred to future release. Tracked but not in current roadmap.
 
 ### Camera Controls
 
-- **CAM-03**: User camera uses quaternion-based rotations (if Euler proves insufficient)
+- [x] **CAM-03**: User camera uses quaternion-based rotations (if Euler proves insufficient)
 
 ### Data Loading - JSON
 
@@ -75,8 +75,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CAM-01 | Phase 1 | Pending |
-| CAM-02 | Phase 1 | Pending |
+| CAM-01 | Phase 1 | Complete |
+| CAM-02 | Phase 1 | Complete |
+| CAM-03 | Phase 1.1 | Complete |
 | JSON-01 | Phase 2 | Pending |
 | JSON-02 | Phase 2 | Pending |
 | SQL-01 | Phase 3 | Pending |
@@ -89,6 +90,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 - v1 requirements: 9 total
 - Mapped to phases: 9 ✓
 - Unmapped: 0
+- Completed: 3/9 (CAM-01, CAM-02, CAM-03)
 
 ---
 *Requirements defined: 2026-02-01*
