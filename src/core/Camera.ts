@@ -128,24 +128,10 @@ export class Camera {
   update(deltaTime: number = 1/60): void {
     const speed = this.moveSpeed * deltaTime * (this.controls.fast ? this.fastMoveMultiplier : 1)
 
-    // Calculate movement direction based on camera rotation
-    // Match the shader's getForwardVector calculation exactly
-    const forward = vec3.create()
-    vec3.set(forward,
-      Math.cos(this.rotation.x) * Math.sin(this.rotation.y),
-      -Math.sin(this.rotation.x),
-      -Math.cos(this.rotation.x) * Math.cos(this.rotation.y)
-    )
-
-    const right = vec3.create()
-    vec3.set(right,
-      Math.cos(this.rotation.y),
-      0,
-      -Math.sin(this.rotation.y)
-    )
-
-    const up = vec3.create()
-    vec3.set(up, 0, 1, 0)
+    // Get movement vectors from quaternion orientation
+    const forward = this.getForward()
+    const right = this.getRight()
+    const up = this.getUp()
 
     // Apply movement - forward/backward moves in camera's look direction
     if (this.controls.forward) {
@@ -183,10 +169,11 @@ export class Camera {
    * Get camera parameters for shader uniforms (no matrix calculations!)
    */
   getShaderUniforms(aspect: number) {
+    const euler = this.quatToEuler(this.orientation)
     return {
       u_cameraPosition: [this.position[0], this.position[1], this.position[2]],
-      u_cameraRotation: [this.rotation.x, this.rotation.y],
-      u_fov: this.fov * Math.PI / 180, // Convert to radians
+      u_cameraRotation: [euler.x, euler.y],
+      u_fov: this.fov * Math.PI / 180,
       u_near: this.near,
       u_far: this.far,
       u_aspect: aspect
@@ -197,26 +184,18 @@ export class Camera {
    * Get camera forward direction
    */
   getForward(): vec3 {
-    const v = vec3.create()
-    vec3.set(v,
-      Math.cos(this.rotation.x) * Math.sin(this.rotation.y),
-      -Math.sin(this.rotation.x),
-      -Math.cos(this.rotation.x) * Math.cos(this.rotation.y)
-    )
-    return v
+    const forward = vec3.create()
+    vec3.transformQuat(forward, [0, 0, -1], this.orientation)
+    return forward
   }
 
   /**
    * Get camera right direction
    */
   getRight(): vec3 {
-    const v = vec3.create()
-    vec3.set(v,
-      Math.cos(this.rotation.y),
-      0,
-      -Math.sin(this.rotation.y)
-    )
-    return v
+    const right = vec3.create()
+    vec3.transformQuat(right, [1, 0, 0], this.orientation)
+    return right
   }
 
   /**
@@ -224,7 +203,7 @@ export class Camera {
    */
   getUp(): vec3 {
     const up = vec3.create()
-    vec3.cross(up, this.getRight(), this.getForward())
+    vec3.transformQuat(up, [0, 1, 0], this.orientation)
     return up
   }
 }
