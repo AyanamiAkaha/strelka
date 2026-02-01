@@ -169,10 +169,17 @@ export class Camera {
    * Get camera parameters for shader uniforms (no matrix calculations!)
    */
   getShaderUniforms(aspect: number) {
-    const euler = this.quatToEuler(this.orientation)
+    // Extract Euler angles from quaternion for shader compatibility
+    const pitch = Math.asin(2 * (this.orientation[3] * this.orientation[1] -
+                                    this.orientation[0] * this.orientation[2]))
+    const yaw = Math.atan2(2 * (this.orientation[3] * this.orientation[0] +
+                                  this.orientation[1] * this.orientation[2]),
+                            1 - 2 * (this.orientation[0] * this.orientation[0] +
+                                         this.orientation[1] * this.orientation[1]))
+
     return {
       u_cameraPosition: [this.position[0], this.position[1], this.position[2]],
-      u_cameraRotation: [euler.x, euler.y],
+      u_cameraRotation: [pitch, yaw],  // Keep format for shader compatibility
       u_fov: this.fov * Math.PI / 180,
       u_near: this.near,
       u_far: this.far,
