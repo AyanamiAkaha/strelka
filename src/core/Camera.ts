@@ -109,43 +109,46 @@ export class Camera {
    */
   update(deltaTime: number = 1/60): void {
     const speed = this.moveSpeed * deltaTime * (this.controls.fast ? this.fastMoveMultiplier : 1)
-    
+
     // Calculate movement direction based on camera rotation
     // Match the shader's getForwardVector calculation exactly
-    const forward = new Vec3(
+    const forward = vec3.create()
+    vec3.set(forward,
       Math.cos(this.rotation.x) * Math.sin(this.rotation.y),
       -Math.sin(this.rotation.x),
       -Math.cos(this.rotation.x) * Math.cos(this.rotation.y)
     )
-    
-    const right = new Vec3(
+
+    const right = vec3.create()
+    vec3.set(right,
       Math.cos(this.rotation.y),
       0,
       -Math.sin(this.rotation.y)
     )
-    
-    const up = new Vec3(0, 1, 0)
-    
+
+    const up = vec3.create()
+    vec3.set(up, 0, 1, 0)
+
     // Apply movement - forward/backward moves in camera's look direction
     if (this.controls.forward) {
-      this.position = Vec3.add(this.position, Vec3.multiply(forward, speed))
+      vec3.add(this.position, this.position, vec3.scale(vec3.create(), forward, speed))
     }
     if (this.controls.backward) {
-      this.position = Vec3.subtract(this.position, Vec3.multiply(forward, speed))
+      vec3.sub(this.position, this.position, vec3.scale(vec3.create(), forward, speed))
     }
     if (this.controls.right) {
-      this.position = Vec3.add(this.position, Vec3.multiply(right, speed))
+      vec3.add(this.position, this.position, vec3.scale(vec3.create(), right, speed))
     }
     if (this.controls.left) {
-      this.position = Vec3.subtract(this.position, Vec3.multiply(right, speed))
+      vec3.sub(this.position, this.position, vec3.scale(vec3.create(), right, speed))
     }
     if (this.controls.up) {
-      this.position = Vec3.add(this.position, Vec3.multiply(up, speed))
+      vec3.add(this.position, this.position, vec3.scale(vec3.create(), up, speed))
     }
     if (this.controls.down) {
-      this.position = Vec3.subtract(this.position, Vec3.multiply(up, speed))
+      vec3.sub(this.position, this.position, vec3.scale(vec3.create(), up, speed))
     }
-    
+
     // No matrix updates needed - shader handles everything!
   }
 
@@ -163,7 +166,7 @@ export class Camera {
    */
   getShaderUniforms(aspect: number) {
     return {
-      u_cameraPosition: this.position.toArray(),
+      u_cameraPosition: [this.position[0], this.position[1], this.position[2]],
       u_cameraRotation: [this.rotation.x, this.rotation.y],
       u_fov: this.fov * Math.PI / 180, // Convert to radians
       u_near: this.near,
@@ -175,29 +178,35 @@ export class Camera {
   /**
    * Get camera forward direction
    */
-  getForward(): Vec3 {
-    return new Vec3(
+  getForward(): vec3 {
+    const v = vec3.create()
+    vec3.set(v,
       Math.cos(this.rotation.x) * Math.sin(this.rotation.y),
       -Math.sin(this.rotation.x),
       -Math.cos(this.rotation.x) * Math.cos(this.rotation.y)
     )
+    return v
   }
 
   /**
    * Get camera right direction
    */
-  getRight(): Vec3 {
-    return new Vec3(
+  getRight(): vec3 {
+    const v = vec3.create()
+    vec3.set(v,
       Math.cos(this.rotation.y),
       0,
       -Math.sin(this.rotation.y)
     )
+    return v
   }
 
   /**
    * Get camera up direction
    */
-  getUp(): Vec3 {
-    return Vec3.cross(this.getRight(), this.getForward())
+  getUp(): vec3 {
+    const up = vec3.create()
+    vec3.cross(up, this.getRight(), this.getForward())
+    return up
   }
 }
