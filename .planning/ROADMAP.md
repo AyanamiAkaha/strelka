@@ -32,7 +32,11 @@ Decimal phases appear between their surrounding integers in numeric order.
 2. Coordinate system is documented in Camera.ts with Y-up convention
 3. Axis sign corrections are implemented in forward vector formula
 
-**Plans**: TBD
+**Plans**: 3 plans (in 3 waves)
+
+- [ ] 01-camera-rotation-fix-01-PLAN.md — Fix forward vector calculation in Camera.ts and ShaderManager.ts
+- [ ] 01-camera-rotation-fix-02-PLAN.md — Create coordinate system documentation
+- [ ] 01-camera-rotation-fix-03-PLAN.md — Verify camera rotation behavior
 
 ### Phase 2: JSON Data Loader
 
@@ -86,7 +90,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Camera Rotation Fix | 0/TBD | Not started | - |
+| 1. Camera Rotation Fix | 0/3 | Ready to execute | - |
 | 2. JSON Data Loader | 0/TBD | Not started | - |
 | 3. SQLite Data Loader | 0/TBD | Not started | - |
 | 4. Data Source Toggle & Error Display | 0/TBD | Not started | - |
