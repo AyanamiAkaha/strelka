@@ -116,13 +116,14 @@ const startRenderLoop = () => {
           // Set camera uniforms for GPU matrix calculation
           const canvas = canvasRef.value.canvasElement
           const aspect = canvas ? canvas.width / canvas.height : 1.0
-          
-          gl.uniform3fv(gl.getUniformLocation(shaderProgram, 'u_cameraPosition'), [camera.value.position.x, camera.value.position.y, camera.value.position.z])
-          gl.uniform2fv(gl.getUniformLocation(shaderProgram, 'u_cameraRotation'), [camera.value.rotation.x, camera.value.rotation.y])
-          gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_fov'), camera.value.fov * Math.PI / 180)
-          gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_aspect'), aspect)
-          gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_near'), camera.value.near)
-          gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_far'), camera.value.far)
+          const uniforms = camera.value.getShaderUniforms(aspect)
+
+          gl.uniform3fv(gl.getUniformLocation(shaderProgram, 'u_cameraPosition'), uniforms.u_cameraPosition)
+          gl.uniform2fv(gl.getUniformLocation(shaderProgram, 'u_cameraRotation'), uniforms.u_cameraRotation)
+          gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_fov'), uniforms.u_fov)
+          gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_aspect'), uniforms.u_aspect)
+          gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_near'), uniforms.u_near)
+          gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_far'), uniforms.u_far)
           gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_pointSize'), 10.0)
           gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_hilighted_cluster'), highlightedCluster.value)
           
