@@ -100,8 +100,18 @@ export class Camera {
    * Handle mouse movement for looking around
    */
   handleMouseMove(deltaX: number, deltaY: number): void {
-    this.rotation.y += deltaX * this.mouseSensitivity
-    this.rotation.x += deltaY * this.mouseSensitivity
+    const pitchChange = deltaY * this.mouseSensitivity
+    const yawChange = deltaX * this.mouseSensitivity
+
+    // Apply pitch rotation
+    const temp = quat.create()
+    quat.rotateX(temp, this.orientation, pitchChange)
+
+    // Apply yaw rotation to result (order matters: X then Y)
+    quat.rotateY(this.orientation, temp, yawChange)
+
+    // Normalize periodically to prevent quaternion drift
+    quat.normalize(this.orientation, this.orientation)
   }
 
   /**
