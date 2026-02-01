@@ -118,6 +118,9 @@ const startRenderLoop = () => {
           const aspect = canvas ? canvas.width / canvas.height : 1.0
           const uniforms = camera.value.getShaderUniforms(aspect)
 
+          // Pass pre-computed view and MVP matrices (quaternion-based, no gimbal lock)
+          gl.uniformMatrix4fv(gl.getUniformLocation(shaderProgram, 'u_viewMatrix'), false, uniforms.u_viewMatrix)
+          gl.uniformMatrix4fv(gl.getUniformLocation(shaderProgram, 'u_mvpMatrix'), false, uniforms.u_mvpMatrix)
           gl.uniform3fv(gl.getUniformLocation(shaderProgram, 'u_cameraPosition'), uniforms.u_cameraPosition)
           gl.uniform2fv(gl.getUniformLocation(shaderProgram, 'u_cameraRotation'), uniforms.u_cameraRotation)
           gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_fov'), uniforms.u_fov)

@@ -159,9 +159,11 @@ export class ShaderManager {
         attribute vec3 a_position;
         attribute float a_clusterId;
 
-        // Camera parameters instead of pre-calculated matrices
+        // Camera matrices from CPU (pre-computed for efficiency)
+        uniform mat4 u_viewMatrix;     // View matrix from quaternion camera
+        uniform mat4 u_mvpMatrix;      // Combined projection * view matrix
         uniform vec3 u_cameraPosition;
-        uniform vec2 u_cameraRotation;  // [pitch, yaw]
+        uniform vec2 u_cameraRotation;  // Not used with MVP matrix
         uniform float u_fov;
         uniform float u_near;
         uniform float u_far;
@@ -172,62 +174,16 @@ export class ShaderManager {
         varying float v_isHilighted;
         varying float v_revCamDist;
 
-        // Corrected GPU matrix calculation functions
-        mat4 perspective(float fov, float aspect, float near, float far) {
-          float f = 1.0 / tan(fov * 0.5);
-          float nf = 1.0 / (near - far);
-          
-          // GLSL mat4 constructor is column-major, so each vec4 is a column
-          return mat4(
-            vec4(f / aspect, 0.0, 0.0, 0.0),              // column 0
-            vec4(0.0, f, 0.0, 0.0),                        // column 1  
-            vec4(0.0, 0.0, (far + near) * nf, -1.0),      // column 2
-            vec4(0.0, 0.0, 2.0 * far * near * nf, 0.0)    // column 3
-          );
-        }
-        
-        mat4 lookAt(vec3 eye, vec3 target, vec3 up) {
-          vec3 zAxis = normalize(eye - target);
-          vec3 xAxis = normalize(cross(up, zAxis));  
-          vec3 yAxis = cross(zAxis, xAxis);
-          
-          // GLSL mat4 constructor is column-major, so each vec4 is a column
-          return mat4(
-            vec4(xAxis.x, yAxis.x, zAxis.x, 0.0),          // column 0
-            vec4(xAxis.y, yAxis.y, zAxis.y, 0.0),          // column 1
-            vec4(xAxis.z, yAxis.z, zAxis.z, 0.0),          // column 2
-            vec4(-dot(xAxis, eye), -dot(yAxis, eye), -dot(zAxis, eye), 1.0)  // column 3
-          );
-        }
-        
-        // Fixed rotation convention - camera looks down -Z when rotation is (0,0)
-        vec3 getForwardVector(vec2 rotation) {
-          float pitch = rotation.x;
-          float yaw = rotation.y;
-          
-          return vec3(
-            cos(pitch) * sin(yaw),
-            -sin(pitch),
-            -cos(pitch) * cos(yaw)
-          );
-        }
-
         void main() {
           // No animation - just static points
           vec3 position = a_position;
 
-          // Calculate matrices on GPU (parallel for all vertices!)
-          vec3 forward = getForwardVector(u_cameraRotation);
-          vec3 target = u_cameraPosition + forward;
-          vec3 up = vec3(0.0, 1.0, 0.0);
-          
-          mat4 projection = perspective(u_fov, u_aspect, u_near, u_far);
-          mat4 view = lookAt(u_cameraPosition, target, up);
-          mat4 mvp = projection * view;
-
+          // Use pre-computed MVP matrix (Projection * View)
+          // Order: Projection is applied first, then View (right-to-left order)
+          // This uses quaternion-based view matrix which eliminates gimbal lock
           float revCamDistance = 1.0 - clamp(length(u_cameraPosition - position)/100.0, 0.0, 1.0);
-          
-          gl_Position = mvp * vec4(position, 1.0);
+
+          gl_Position = u_mvpMatrix * vec4(position, 1.0);
           gl_PointSize = clamp(u_pointSize * revCamDistance, 4.0, 50.0);
 
           v_isHilighted = abs(a_clusterId - u_hilighted_cluster) < 0.4 ? 1.0 : 0.0;
@@ -243,7 +199,7 @@ export class ShaderManager {
         void main() {
           vec2 coord = gl_PointCoord - vec2(0.5);
           float distance = length(coord);
-          
+
           if (distance > 0.5) {
             discard;
           }
@@ -253,7 +209,7 @@ export class ShaderManager {
           vec3 c_base = v_isHilighted > 0.5 ? vec3(1.0, 0.5, 0.2) : vec3(1.0);
           vec3 c_far = v_isHilighted > 0.5 ? vec3(0.1, 0.0, 0.1) : vec3(0.0, 0.0, 0.3);
           vec3 color = mix(c_far, c_base, v_revCamDist);
-          
+
           gl_FragColor = vec4(color, intensity);
         }
       `

@@ -1,4 +1,4 @@
-import { vec3, quat } from './Math'
+import { vec3, quat, mat4 } from './Math'
 
 export interface CameraControls {
   forward: boolean
@@ -166,20 +166,37 @@ export class Camera {
   }
 
   /**
-   * Get camera parameters for shader uniforms (no matrix calculations!)
+   * Get camera parameters for shader uniforms
+   * Computes view matrix from quaternion to eliminate gimbal lock in shader
    */
   getShaderUniforms(aspect: number) {
-    // Extract Euler angles from quaternion for shader compatibility
-    const pitch = Math.asin(2 * (this.orientation[3] * this.orientation[1] -
-                                    this.orientation[0] * this.orientation[2]))
-    const yaw = Math.atan2(2 * (this.orientation[3] * this.orientation[0] +
-                                  this.orientation[1] * this.orientation[2]),
-                            1 - 2 * (this.orientation[0] * this.orientation[0] +
-                                         this.orientation[1] * this.orientation[1]))
+    // Get local camera axes from quaternion (these are camera's local space)
+    const forward = this.getForward()
+    const up = this.getUp()
+
+    // Target is where camera looks: current position + forward direction
+    const target = vec3.create()
+    vec3.add(target, this.position, forward)
+
+    // View matrix transforms world to camera space
+    // Order: eye (position), center (look target), up (camera's local up from quaternion)
+    const view = mat4.create()
+    mat4.lookAt(view, this.position, target, up)
+
+    // Projection matrix (perspective)
+    const projection = mat4.create()
+    mat4.perspective(projection, this.fov * Math.PI / 180, aspect, this.near, this.far)
+
+    // MVP = Projection * View * Model (Model is identity for world-space points)
+    // Note: Matrix multiplication order is right-to-left in gl-matrix
+    const mvp = mat4.create()
+    mat4.multiply(mvp, projection, view)
 
     return {
       u_cameraPosition: [this.position[0], this.position[1], this.position[2]],
-      u_cameraRotation: [pitch, yaw],  // Keep format for shader compatibility
+      u_cameraRotation: [0, 0],  // Not used with MVP matrix
+      u_viewMatrix: view,           // Pass view matrix to shader
+      u_mvpMatrix: mvp,           // Pass combined matrix to shader
       u_fov: this.fov * Math.PI / 180,
       u_near: this.near,
       u_far: this.far,
