@@ -109,13 +109,71 @@ const minPitch = -Math.PI / 2 + 0.1; // ~-89 degrees
 this.rotation.x = Math.max(minPitch, Math.min(maxPitch, this.rotation.x));
 ```
 
-### Gimbal Limitation
+### Gimbal Limitation - Root Cause
 
-**Important:** The current Euler angle implementation has inherent limitations at extreme angles (near ±89°):
+**Important:** The current Euler angle implementation has inherent limitations at extreme angles (near ±89°).
 
-- Left/right movement becomes diagonal instead of purely horizontal
-- Up/down movement locks to forward/backward direction
-- Yaw rotation affects local coordinate system stability
+**Root Cause:**
+The camera's movement vectors are calculated incorrectly at extreme pitch angles. Specifically:
+
+1. **Right vector calculation (lines 120-124 in Camera.ts):**
+   ```typescript
+   const right = new Vec3(
+     Math.cos(this.rotation.y),  // Only uses yaw!
+     0,                        // Y component is ALWAYS zero
+     -Math.sin(this.rotation.y)   // Only uses yaw!
+   )
+   ```
+   This calculation ignores pitch (rotation.x) entirely - the right vector is always horizontal (world X-Z plane).
+
+2. **Up vector is fixed to world up (line 126 in Camera.ts):**
+   ```typescript
+   const up = new Vec3(0, 1, 0)  // Always world up, never camera-local!
+   ```
+
+**Why this causes coordinate system collapse at extreme angles:**
+
+- At normal pitch angles: Forward + right + up form a valid local coordinate system
+- At extreme pitch (≈±89°): The forward vector is nearly vertical (parallel to world up)
+- But right vector is still calculated purely from yaw in the horizontal plane
+- Up vector is still fixed to world up
+- Result: The coordinate system collapses - vectors are no longer orthogonal in camera's local space
+
+**Symptoms at extreme pitch angles:**
+
+1. **Yaw rotation rotates around world vertical, not camera vertical:**
+   - When looking up/down, mouse left/right rotates camera around the world Y axis (0,1,0)
+   - Instead of rotating around the camera's local up direction
+   - This breaks the entire local coordinate system
+
+2. **Left/right movement becomes diagonal:**
+   - Pressing A/D moves you in the horizontal plane
+   - But the camera is looking nearly straight up/down
+   - Result: You move diagonally relative to what you're looking at
+
+3. **Up/down movement locks to forward/backward direction:**
+   - Pressing Q/E moves you vertically in world coordinates
+   - But at extreme pitch, "vertical" relative to camera is actually horizontal in world space
+   - Result: Up/down movement doesn't move you up/down relative to your view
+
+4. **Complete coordinate system collapse:**
+   - All movement vectors (left/right, up/down) operate in wrong coordinate space
+   - The system thinks it's using camera-local coordinates
+   - But actually using world coordinates due to incorrect vector calculations
+   - This is complete gimbal lock - the entire local frame has collapsed
+
+**Why this is a gimbal lock problem:**
+
+Gimbal lock occurs when one rotational axis aligns with another, causing loss of a degree of freedom. In this case:
+- At extreme pitch, the camera's local up direction aligns with the world up direction
+- The yaw axis (world Y) becomes aligned with the camera's forward/backward axis
+- Left/right and up/down movements lose their intuitive meanings
+- You can still rotate, but rotations happen in the wrong coordinate space
+
+**Current pitch clamping (±89°) prevents worst-case behavior:**
+- Prevents exactly 90° where forward vector would be parallel to world up
+- But even at 89°, the symptoms described above are clearly present
+- The clamping is a band-aid, not a real solution
 
 This is a **fundamental limitation of Euler angle representations**, not a bug in the forward vector formula. A full solution requires implementing **quaternion-based camera rotation**, which is planned for a future phase.
 
