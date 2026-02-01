@@ -1,4 +1,4 @@
-import { Vec3 } from './Math'
+import { vec3 } from './Math'
 
 export interface CameraControls {
   forward: boolean
@@ -12,7 +12,7 @@ export interface CameraControls {
 
 export class Camera {
   // Camera state
-  public position: Vec3
+  public position: vec3
   public rotation: { x: number, y: number }
   public distance: number
   
@@ -39,14 +39,15 @@ export class Camera {
   }
   
   constructor() {
-    this.position = new Vec3(0, 0, 10)
+    this.position = vec3.create()
+    vec3.set(this.position, 0, 0, 10)
     this.rotation = { x: 0, y: 0 }
     this.distance = 10
   }
 
-  public toDebugInfo(): { position: Vec3; rotation: { x: number; y: number }; distance: number } {
+  public toDebugInfo(): { position: { x: number; y: number; z: number }; rotation: { x: number; y: number }; distance: number } {
     return {
-      position: this.position,
+      position: { x: this.position[0], y: this.position[1], z: this.position[2] },
       rotation: this.rotation,
       distance: this.distance
     }
@@ -152,7 +153,7 @@ export class Camera {
    * Reset camera to default position
    */
   reset(): void {
-    this.position = new Vec3(0, 0, 10)
+    vec3.set(this.position, 0, 0, 10)
     this.rotation = { x: 0, y: 0 }
     this.distance = 10
   }
