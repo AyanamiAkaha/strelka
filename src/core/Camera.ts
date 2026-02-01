@@ -19,7 +19,7 @@ export class Camera {
   // Camera settings
   public moveSpeed: number = 5.0
   public fastMoveMultiplier: number = 3.0
-  public mouseSensitivity: number = 0.002
+  public mouseSensitivity: number = 0.0014  // Reduced from 0.002 to match original speed (~30% slower)
   public zoomSpeed: number = 0.1
   
   // Projection settings
@@ -100,8 +100,8 @@ export class Camera {
    * Handle mouse movement for looking around
    */
   handleMouseMove(deltaX: number, deltaY: number): void {
-    const pitchChange = deltaY * this.mouseSensitivity
-    const yawChange = deltaX * this.mouseSensitivity
+    const pitchChange = -deltaY * this.mouseSensitivity   // Negate to fix inverted vertical
+    const yawChange = -deltaX * this.mouseSensitivity      // Negate to fix inverted horizontal
 
     // Apply pitch rotation
     const temp = quat.create()
