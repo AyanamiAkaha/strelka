@@ -1,4 +1,4 @@
-import { vec3 } from './Math'
+import { vec3, quat } from './Math'
 
 export interface CameraControls {
   forward: boolean
@@ -13,7 +13,7 @@ export interface CameraControls {
 export class Camera {
   // Camera state
   public position: vec3
-  public rotation: { x: number, y: number }
+  private orientation: quat
   public distance: number
   
   // Camera settings
@@ -41,14 +41,25 @@ export class Camera {
   constructor() {
     this.position = vec3.create()
     vec3.set(this.position, 0, 0, 10)
-    this.rotation = { x: 0, y: 0 }
+    this.orientation = quat.create()
     this.distance = 10
+  }
+
+  /**
+   * Convert quaternion to Euler angles for debug display only
+   */
+  private quatToEuler(q: quat): { x: number, y: number } {
+    // Extract Euler angles from quaternion for display only
+    const pitch = Math.asin(2 * (q[3] * q[1] - q[0] * q[2]))
+    const yaw = Math.atan2(2 * (q[3] * q[0] + q[1] * q[2]),
+                         1 - 2 * (q[0] * q[0] + q[1] * q[1]))
+    return { x: pitch, y: yaw }
   }
 
   public toDebugInfo(): { position: { x: number; y: number; z: number }; rotation: { x: number; y: number }; distance: number } {
     return {
       position: { x: this.position[0], y: this.position[1], z: this.position[2] },
-      rotation: this.rotation,
+      rotation: this.quatToEuler(this.orientation),
       distance: this.distance
     }
   }
@@ -91,9 +102,6 @@ export class Camera {
   handleMouseMove(deltaX: number, deltaY: number): void {
     this.rotation.y += deltaX * this.mouseSensitivity
     this.rotation.x += deltaY * this.mouseSensitivity
-    
-    // Clamp vertical rotation to prevent gimbal lock
-    this.rotation.x = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, this.rotation.x))
   }
 
   /**
@@ -157,7 +165,7 @@ export class Camera {
    */
   reset(): void {
     vec3.set(this.position, 0, 0, 10)
-    this.rotation = { x: 0, y: 0 }
+    quat.identity(this.orientation)
     this.distance = 10
   }
 
