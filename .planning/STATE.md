@@ -5,33 +5,34 @@
 See: .planning/PROJECT.md (updated 2026-02-01)
 
 **Core value:** Users can load and explore real point cluster data in 3D with interactive camera controls and cluster highlighting
-**Current focus:** Phase 1 - Camera Rotation Fix
+**Current focus:** Phase 1.1 - Implement Quaternion-Based Camera
 
 ## Current Position
 
-Phase: 1 of 4 (Camera Rotation Fix)
-Plan: 3 of 3 in current phase
-Status: Phase complete
-Last activity: 2026-02-02 - Completed 01-camera-rotation-fix-03-PLAN.md
+Phase: 1.1 of 3 (Quaternion-Based Camera Implementation)
+Plan: 1 of 5 in current phase
+Status: In progress
+Last activity: 2026-02-02 - Completed 01.1-01-PLAN.md
 
-Progress: [██████████] 100%
+Progress: [██░░░░░░░░░░░░░░░░░░░░] 20%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 1.3 min
-- Total execution time: 0.07 hours
+- Total plans completed: 4 (Phase 1: 3, Phase 1.1: 1)
+- Average duration: 1.5 min
+- Total execution time: 0.09 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 | 3 | 3 | 1.3 min |
+| 1.1 | 1 | 5 | 2.0 min |
 
 **Recent Trend:**
-- Phase 1 plans: 01-01 (2 min), 01-02 (2 min), 01-03 (2 min)
-- Trend: Consistent ~2 min per plan
+- Phase 1.1 plan 01.1-01: 2 min
+- Trend: Starting quaternion implementation phase
 
 *Updated after each plan completion*
 
@@ -42,12 +43,10 @@ Progress: [██████████] 100%
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- Plan 01 misidentified the bug - requires quaternion implementation, not simple sign fix
-- Plan 03: Document and defer to quaternion phase (no targeted fix in current phase)
-  - Root cause: movement vectors not transformed into camera's local space
-  - Right vector ignores pitch, up vector fixed to world up
-  - Complete coordinate system collapse at extreme pitch angles
-- Creating new phase recommendation for "Implement Quaternion-Based Camera"
+- Phase 1.1 Context: Clean replacement of Camera.ts internals with quaternion logic
+- Phase 1.1-01: gl-matrix@3.4.4 installed as single source of truth for vector/quaternion math
+- Phase 1.1-01: Math.ts re-exports gl-matrix vec3 and quat modules
+- Phase 1.1-01: No Camera.ts update in this plan (will be updated in plan 01.1-02)
 
 ### Pending Todos
 
@@ -59,22 +58,14 @@ None yet.
 
 Issues that affect future work
 
-**Gimbal lock at extreme pitch angles (documented in plan 03):**
-- Root cause: Right vector ignores pitch, up vector fixed to world up (0,1,0)
-- At extreme pitch (≈±89°), yaw rotation uses world vertical instead of camera vertical
-- Coordinate system collapse: movement vectors operate in wrong coordinate space
-- Symptoms: diagonal left/right, locked up/down, incorrect yaw rotation
-- Requires quaternion-based camera implementation (separate phase recommended)
-- This is a fundamental Euler angle limitation, not a simple sign or formula error
+None for Phase 1.1. Phase 1 documented gimbal lock issue which this phase addresses.
 
-### Blockers/Concerns
+### Roadmap Evolution
 
-Issues that affect future work
-
-None yet.
+- Phase 1.1 inserted after Phase 1: implement quaternion-based camera (in progress)
 
 ## Session Continuity
 
 Last session: 2026-02-02
-Stopped at: Completed 01-camera-rotation-fix-03-PLAN.md (Phase 1 complete)
+Stopped at: Completed 01.1-01-PLAN.md
 Resume file: None
