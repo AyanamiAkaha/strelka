@@ -13,8 +13,8 @@ This roadmap delivers data loading capabilities for WebGL point cloud visualizat
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Camera Rotation Fix** - Fix Euler rotation axis signs and document coordinate system
-- [ ] **Phase 2: JSON Data Loader** - Implement file picker, JSON parsing, and error handling
-- [ ] **Phase 3: SQLite Data Loader** - Add sql.js integration for loading .db files
+ - [x] **Phase 2: JSON Data Loader** - Implement file picker, JSON parsing, and error handling
+ - [ ] **Phase 3: SQLite Data Loader** - Add sql.js integration for loading .db files
 - [ ] **Phase 4: Data Source Toggle & Error Display** - Enable switching between data sources with error UI
 
 ## Phase Details
@@ -76,8 +76,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] 02-01-PLAN.md — Create JSON types and validation logic
 - [x] 02-02-PLAN.md — Add loadFromFile() method to DataProvider
-- [ ] 02-03-PLAN.md — Create DataLoadControl and integrate error panel
-
+ - [x] 02-03-PLAN.md — Create DataLoadControl and integrate error panel
+ 
 ### Phase 3: SQLite Data Loader
 
 **Goal**: Users can load point data from SQLite databases
@@ -117,6 +117,6 @@ Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 |  1. Camera Rotation Fix | 3/3 | Complete | 2026-02-02 |
 |  1.1. Implement Quaternion-Based Camera | 5/5 | Complete | 2026-02-02 |
-|  2. JSON Data Loader | 2/3 | In progress | - |
+ |  2. JSON Data Loader | 3/3 | Complete | 2026-02-02 |
 |  3. SQLite Data Loader | 0/TBD | Not started | - |
 |  4. Data Source Toggle & Error Display | 0/TBD | Not started | - |
