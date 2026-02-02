@@ -4,3 +4,13 @@ export interface JsonPoint {
   z: number
   cluster?: number | null
 }
+
+export interface TableInfo {
+  name: string
+  hasCluster: boolean
+}
+
+export interface SqliteQueryResult {
+  columns: string[]
+  values: unknown[][]
+}

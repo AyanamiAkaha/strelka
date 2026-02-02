@@ -1,5 +1,6 @@
 import { JsonPoint } from './types'
 import { PointData } from './DataProvider'
+import { TableInfo } from './types'
 
 /**
  * Validates a single JSON point object
@@ -97,3 +98,43 @@ export function parseJsonData(jsonText: string): PointData {
     throw error
   }
 }
+
+/**
+ * Validates SQLite table schema for required columns and cluster presence
+ * @param db - SQLite Database instance from sql.js
+ * @param tableName - Name of the table to validate
+ * @returns TableInfo object with table name and hasCluster boolean
+ * @throws Error if table not found or missing required columns
+ */
+export function validateTableSchema(db: any, tableName: string): TableInfo {
+  // Query table schema using PRAGMA table_info
+  const pragmaResults = db.exec(`PRAGMA table_info(${tableName})`)
+
+  // Check if table exists (no results = table not found)
+  if (!pragmaResults || pragmaResults.length === 0) {
+    throw new Error(`Table not found: ${tableName}`)
+  }
+
+  // Extract column names from PRAGMA result (column index 1: 'name')
+  const schemaResult = pragmaResults[0]
+  const columnNames = schemaResult.values.map((row: unknown[]) => row[1] as string)
+
+  // Check for required columns: x, y, z
+  const requiredColumns = ['x', 'y', 'z']
+  const missingColumns = requiredColumns.filter(col => !columnNames.includes(col))
+
+  if (missingColumns.length > 0) {
+    throw new Error(
+      `Table must have x, y, z columns. Table ${tableName} missing: ${missingColumns.join(', ')}`
+    )
+  }
+
+  // Check if cluster column exists (optional)
+  const hasCluster = columnNames.includes('cluster')
+
+  return {
+    name: tableName,
+    hasCluster
+  }
+}
+
