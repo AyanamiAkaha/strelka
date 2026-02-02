@@ -12,8 +12,11 @@
     <ControlsOverlay
       @file-selected="handleLoadFile"
       @table-selected="handleTableSelected"
+      @switch-to-generated="switchToGenerated"
+      @switch-to-loaded="switchToLoaded"
       :is-loading="isLoading"
       :current-file="currentFile"
+      :current-data-source="currentDataSource"
     />
     <DebugInfo v-if="camera"
       :camera="camera!.toDebugInfo()"
@@ -61,6 +64,10 @@ const loadError = ref<string>('')
 const isLoading = ref(false)
 const currentFile = ref<File | null>(null)
 
+enum DataSource { GENERATED = 'generated', LOADED = 'loaded' }
+
+const currentDataSource = ref<DataSource>(DataSource.GENERATED)
+
 let animationId: number | null = null
 let fpsCounter = 0
 let lastFpsTime = 0
@@ -104,14 +111,16 @@ const handleLoadFile = async (file: File, tableName?: string) => {
       const result = await DataProvider.loadSqliteFile(file, tableName)
       pointData = result.pointData
       pointCount.value = result.pointData.positions.length / 3
+      console.log('Loaded point data from SQLite file:', pointData.positions.slice(0, 10), '...; total points:', pointCount.value), 
       setupBuffers(glCache)
     }
-    loadError.value = null
+    loadError.value = ''
   } catch (error) {
     console.error('Error loading file:', error)
     loadError.value = error instanceof Error ? error.message : 'Error loading file'
     // Preserve existing pointData on load failure (CONTEXT.md)
   } finally {
+    currentDataSource.value = DataSource.LOADED  // Set data source on successful load
     isLoading.value = false
   }
 }
@@ -119,6 +128,76 @@ const handleLoadFile = async (file: File, tableName?: string) => {
 const handleTableSelected = (tableName: string) => {
   if (currentFile.value) {
     handleLoadFile(currentFile.value, tableName)
+  }
+}
+
+const switchToGenerated = async () => {
+  if (isLoading.value) return  // Prevent race condition (Pitfall 2)
+  isLoading.value = true
+
+  try {
+    // Clear old buffers to prevent memory leaks (Pitfall 1)
+    if (positionBuffer) {
+      glCache.deleteBuffer(positionBuffer)
+      positionBuffer = null
+    }
+    if (clusterIdBuffer) {
+      glCache.deleteBuffer(clusterIdBuffer)
+      clusterIdBuffer = null
+    }
+
+    // Reset camera to default (CONTEXT.md decision)
+    camera.value?.reset()
+
+    // Reset cluster highlighting to show all (Pitfall 8)
+    highlightedCluster.value = -1
+
+    // Regenerate data
+    regenPoints()
+    setupBuffers(glCache)
+
+    currentDataSource.value = DataSource.GENERATED
+  } catch (error) {
+    console.error('Error switching to generated data:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const switchToLoaded = async () => {
+  if (isLoading.value) return  // Prevent race condition (Pitfall 2)
+  if (!currentFile.value) {
+    console.warn('No loaded file to switch to')
+    return
+  }
+
+  isLoading.value = true
+
+  try {
+    // Clear old buffers to prevent memory leaks (Pitfall 1)
+    if (positionBuffer) {
+      glCache.deleteBuffer(positionBuffer)
+      positionBuffer = null
+    }
+    if (clusterIdBuffer) {
+      glCache.deleteBuffer(clusterIdBuffer)
+      clusterIdBuffer = null
+    }
+
+    // Reset camera to default (CONTEXT.md decision)
+    camera.value?.reset()
+
+    // Reset cluster highlighting to show all (Pitfall 8)
+    highlightedCluster.value = -1
+
+    // Reload the current file
+    await handleLoadFile(currentFile.value)
+
+    currentDataSource.value = DataSource.LOADED
+  } catch (error) {
+    console.error('Error switching to loaded data:', error)
+  } finally {
+    isLoading.value = false
   }
 }
 
