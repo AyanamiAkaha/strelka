@@ -104,6 +104,7 @@ const processFile = async (file: File) => {
       isLoading.value = true
       const result = await DataProvider.loadSqliteFile(file)
       availableTables.value = result.tables
+      emit('file-selected', file)
       isLoading.value = false
 
       // If there's only one table, auto-select it
