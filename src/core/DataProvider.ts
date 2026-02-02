@@ -1,12 +1,24 @@
 import initSqlJs from 'sql.js'
 import { parseJsonData } from './validators'
+import { validateTableSchema } from './validators'
 
-// Initialize sql.js module with WebAssembly support
-const SQL = await initSqlJs({
-  locateFile: (file: string) => {
-    return `/node_modules/sql.js/dist/${file}`
+// Initialize sql.js module with WebAssembly support (lazy initialization)
+let SQL: any = null
+
+/**
+ * Ensure SQL module is initialized before use
+ * @returns Promise that resolves with initialized SQL module
+ */
+async function ensureSqlInitialized(): Promise<any> {
+  if (!SQL) {
+    SQL = await initSqlJs({
+      locateFile: (file: string) => {
+        return `/node_modules/sql.js/dist/${file}`
+      }
+    })
   }
-})
+  return SQL
+}
 
 export interface PointData {
   // Array of [x, y, z] coordinates flattened: [x1, y1, z1, x2, y2, z2, ...]
@@ -130,6 +142,122 @@ export class DataProvider {
       reader.readAsText(file)
     })
    }
+
+  /**
+   * Load point data from a SQLite database file
+   * Uses FileReader.readAsArrayBuffer() for binary SQLite files, db.prepare() + db.each() for efficient incremental processing
+   *
+   * @param file - File object from file input or drag-and-drop
+   * @param tableName - Optional table name to extract data from. If not provided, returns table list only
+   * @returns Promise<{ pointData: PointData, tables: string[] }> with parsed point data and available tables
+   * @throws Error if database is corrupt, table schema invalid, or dataset exceeds 30M points
+   */
+  static async loadSqliteFile(file: File, tableName?: string): Promise<{ pointData: PointData, tables: string[] }> {
+    const sqlModule = await ensureSqlInitialized()
+
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+
+      reader.onload = (e) => {
+        try {
+          // Create Uint8Array from ArrayBuffer and initialize SQLite database
+          const uint8Array = new Uint8Array(e.target?.result as ArrayBuffer)
+          const db = new sqlModule.Database(uint8Array)
+
+          // List tables to verify database integrity
+          const tableResults = db.exec("SELECT name FROM sqlite_master WHERE type='table'")
+          
+          if (!tableResults || tableResults.length === 0) {
+            throw new Error('Database corrupt or unreadable')
+          }
+
+          const tables = this.getTableList(db)
+
+          // If no table specified, return empty pointData with table list
+          if (!tableName) {
+            resolve({
+              pointData: {
+                positions: new Float32Array(0),
+                clusterIds: new Float32Array(0),
+                count: 0
+              },
+              tables
+            })
+            return
+          }
+
+          // Validate table schema and check for cluster column
+          const tableInfo = validateTableSchema(db, tableName)
+
+          // Check row count and enforce 30M point limit
+          const countResults = db.exec(`SELECT COUNT(*) FROM ${tableName}`)
+          const count = countResults[0].values[0][0] as number
+
+          if (count > 30_000_000) {
+            throw new Error(`Dataset too large: ${count} points (max 30,000,000)`)
+          }
+
+          // Pre-allocate Float32Arrays for WebGL
+          const positions = new Float32Array(count * 3)
+          const clusterIds = new Float32Array(count)
+          let index = 0
+
+          // Process rows incrementally with db.each() to avoid loading all data into memory at once
+          db.each(
+            `SELECT x, y, z${tableInfo.hasCluster ? ', cluster' : ''} FROM ${tableName}`,
+            {},
+            (row: unknown[]) => {
+              // Row is array of values in order of SELECT
+              positions[index * 3] = row[0] as number      // x
+              positions[index * 3 + 1] = row[1] as number  // y
+              positions[index * 3 + 2] = row[2] as number  // z
+              clusterIds[index] = tableInfo.hasCluster ? ((row[3] ?? -1) as number) : -1
+              index++
+            },
+            () => {
+              // Done callback
+              resolve({
+                pointData: {
+                  positions,
+                  clusterIds,
+                  count
+                },
+                tables
+              })
+            }
+          )
+        } catch (error) {
+          reject(error)
+        }
+      }
+
+      reader.onerror = () => {
+        const error = new Error('Failed to read database file')
+        console.error('FileReader error:', reader.error)
+        reject(error)
+      }
+
+      reader.readAsArrayBuffer(file)
+    })
+  }
+
+  /**
+   * Helper method to list all tables in a SQLite database
+   * Queries sqlite_master system table to discover available tables
+   *
+   * @param db - SQLite Database instance from sql.js
+   * @returns Array of table names
+   */
+  static getTableList(db: any): string[] {
+    const tableResults = db.exec("SELECT name FROM sqlite_master WHERE type='table'")
+    
+    if (!tableResults || tableResults.length === 0) {
+      return []
+    }
+
+    // Map values array to string array of table names
+    return tableResults[0].values.map((row: unknown[]) => row[0] as string)
+  }
 
 
   /**
