@@ -140,13 +140,6 @@ watch(() => props.file, (newFile) => {
 </script>
 
 <style scoped>
-.data-load-control {
-  position: absolute;
-  top: 120px;
-  left: 20px;
-  z-index: 100;
-}
-
 .data-load-control button {
   background: rgba(0, 0, 0, 0.8);
   color: #4CAF50;
