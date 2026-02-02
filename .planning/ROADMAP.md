@@ -12,10 +12,13 @@ This roadmap delivers data loading capabilities for WebGL point cloud visualizat
 
 Decimal phases appear between their surrounding integers in numeric order.
 
- - [x] **Phase 1: Camera Rotation Fix** - Fix Euler rotation axis signs and document coordinate system
- - [x] **Phase 2: JSON Data Loader** - Implement file picker, JSON parsing, and error handling
- - [x] **Phase 3: SQLite Data Loader** - Add sql.js integration for loading .db files
+  - [x] **Phase 1: Camera Rotation Fix** - Fix Euler rotation axis signs and document coordinate system
+  - [x] **Phase 2: JSON Data Loader** - Implement file picker, JSON parsing, and error handling
+  - [x] **Phase 3: SQLite Data Loader** - Add sql.js integration for loading .db files
   - [x] **Phase 4: Data Source Toggle & Error Display** - Enable switching between data sources with error UI
+  - [ ] **Phase 5: Fix GPU Memory & Loading Issues** - Close critical blockers from milestone audit
+  - [ ] **Phase 6: Performance & UX Improvements** - Add rendering guards and cleanup
+  - [ ] **Phase 7: Documentation Cleanup** - Resolve technical debt
 
 ## Phase Details
 
@@ -117,10 +120,67 @@ Decimal phases appear between their surrounding integers in numeric order.
   - [x] 04-02-PLAN.md — Implement error display system with collapsible panel
   - [x] 04-03-PLAN.md — Integrate switching with error handling and verify workflow
 
+### Phase 5: Fix GPU Memory & Loading Issues
+
+**Goal**: Fix critical integration issues blocking milestone completion
+
+**Depends on**: Phase 4
+
+**Requirements**: Gap closure from milestone audit
+
+**Success Criteria** (what must be TRUE):
+1. setupBuffers() deletes old buffers before creating new ones
+2. JSON files are loaded only once (no duplicate parsing)
+3. SQLite files do not create empty buffers before table selection
+4. Syntax error in DataProvider.ts is fixed
+
+**Plans**: 4 plans (in 4 waves)
+
+  - [ ] 05-01-PLAN.md — Add buffer cleanup to setupBuffers()
+  - [ ] 05-02-PLAN.md — Remove duplicate JSON loading in DataLoadControl
+  - [ ] 05-03-PLAN.md — Prevent empty SQLite buffer creation
+  - [ ] 05-04-PLAN.md — Fix syntax error in DataProvider.ts
+
+### Phase 6: Performance & UX Improvements
+
+**Goal**: Add performance optimizations and UX consistency fixes
+
+**Depends on**: Phase 5
+
+**Requirements**: Gap closure from milestone audit
+
+**Success Criteria** (what must be TRUE):
+1. Render loop checks pointCount > 0 before drawArrays()
+2. WebGL resources cleaned up on component unmount
+3. Loading state is unified between DataLoadControl and WebGLPlayground
+
+**Plans**: 3 plans (in 3 waves)
+
+  - [ ] 06-01-PLAN.md — Add pointCount guard to render loop
+  - [ ] 06-02-PLAN.md — Add WebGL cleanup to onUnmounted()
+  - [ ] 06-03-PLAN.md — Unify loading state across components
+
+### Phase 7: Documentation Cleanup
+
+**Goal**: Resolve technical debt and complete documentation requirements
+
+**Depends on**: Phase 6
+
+**Requirements**: Gap closure from milestone audit
+
+**Success Criteria** (what must be TRUE):
+1. Camera.ts has JSDoc referencing coordinate system documentation
+2. TODO comments in DataProvider.ts are resolved or updated
+
+**Plans**: 2 plans (in 2 waves)
+
+  - [ ] 07-01-PLAN.md — Add coordinate system JSDoc to Camera.ts
+  - [ ] 07-02-PLAN.md — Resolve or update TODO comments in DataProvider.ts
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4
+Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4 → 5 → 6 → 7
 
   | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -129,3 +189,6 @@ Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4
 | |  2. JSON Data Loader | 3/3 | Complete | 2026-02-02 |
 | |  3. SQLite Data Loader | 3/3 | Complete | 2026-02-03 |
   | 4. Data Source Toggle & Error Display | 3/3 | Complete | 2026-02-03 |
+  | 5. Fix GPU Memory & Loading Issues | 0/4 | Pending | — |
+  | 6. Performance & UX Improvements | 0/3 | Pending | — |
+  | 7. Documentation Cleanup | 0/2 | Pending | — |
