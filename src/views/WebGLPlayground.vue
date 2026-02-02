@@ -33,6 +33,11 @@
       <p>{{ loadError }}</p>
       <button @click="clearLoadError">Dismiss</button>
     </div>
+
+    <!-- Loading overlay blocks UI during data loading -->
+    <div v-if="isLoading" class="loading-overlay">
+      <div class="loading-message">Loading data...</div>
+    </div>
   </div>
 </template>
 
@@ -301,11 +306,34 @@ onUnmounted(() => {
 
 .load-error-panel button {
   margin-top: 10px;
-  padding: 5px 10px;
+  padding:5px 10px;
   background: white;
   color: red;
   border: none;
-  border-radius: 4px;
+  border-radius:4px;
   cursor: pointer;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  pointer-events: none;
+}
+
+.loading-message {
+  background: rgba(0, 0, 0, 0.9);
+  color: #4CAF50;
+  padding: 20px 40px;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 14px;
 }
 </style>
