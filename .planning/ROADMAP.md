@@ -113,9 +113,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Plans**: 3 plans (in 2 waves)
 
- - [ ] 04-01-PLAN.md — Add data source toggle UI and state management
- - [ ] 04-02-PLAN.md — Implement error display system with collapsible panel
- - [ ] 04-03-PLAN.md — Integrate switching with error handling and verify workflow
+  - [x] 04-01-PLAN.md — Add data source toggle UI and state management
+  - [x] 04-02-PLAN.md — Implement error display system with collapsible panel
+  - [ ] 04-03-PLAN.md — Integrate switching with error handling and verify workflow
 
 ## Progress
 
@@ -128,4 +128,4 @@ Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4
 |  1.1. Implement Quaternion-Based Camera | 5/5 | Complete | 2026-02-02 |
 |  2. JSON Data Loader | 3/3 | Complete | 2026-02-02 |
 |  3. SQLite Data Loader | 3/3 | Complete | 2026-02-03 |
- | 4. Data Source Toggle & Error Display | 0/3 | Not started | - |
+  | 4. Data Source Toggle & Error Display | 2/3 | In progress | 2026-02-03 |
