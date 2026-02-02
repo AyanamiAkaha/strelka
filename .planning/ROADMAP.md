@@ -72,7 +72,11 @@ Decimal phases appear between their surrounding integers in numeric order.
 2. System parses JSON and converts to Float32Array for WebGL upload
 3. System displays error message when JSON is invalid or malformed
 
-**Plans**: TBD
+**Plans**: 3 plans (in 3 waves)
+
+- [ ] 02-01-PLAN.md — Create JSON types and validation logic
+- [ ] 02-02-PLAN.md — Add loadFromFile() method to DataProvider
+- [ ] 02-03-PLAN.md — Create DataLoadControl and integrate error panel
 
 ### Phase 3: SQLite Data Loader
 
