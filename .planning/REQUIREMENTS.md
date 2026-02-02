@@ -25,8 +25,8 @@ Requirements for initial data loading milestone. Each maps to roadmap phases.
 
 ### UI
 
-- [ ] **UI-01**: User can toggle between generated data and loaded data source
-- [ ] **UI-02**: System displays errors for loading failures in UI
+- [x] **UI-01**: User can toggle between generated data and loaded data source
+- [x] **UI-02**: System displays errors for loading failures in UI
 
 ## v2 Requirements
 
@@ -74,24 +74,24 @@ Explicitly excluded. Documented to prevent scope creep.
 Which phases cover which requirements. Updated during roadmap creation.
 
  | Requirement | Phase | Status |
-|-------------|-------|--------|
-| CAM-01 | Phase 1 | Complete |
-| CAM-02 | Phase 1 | Complete |
-| CAM-03 | Phase 1.1 | Complete |
-| JSON-01 | Phase 2 | Complete |
-| JSON-02 | Phase 2 | Complete |
-| SQL-01 | Phase 3 | Complete |
-| SQL-02 | Phase 3 | Complete |
-| SQL-03 | Phase 3 | Complete |
-| UI-01 | Phase 4 | Pending |
-| UI-02 | Phase 4 | Pending |
-
+ |-------------|-------|--------|
+ | CAM-01 | Phase 1 | Complete |
+ | CAM-02 | Phase 1 | Complete |
+ | CAM-03 | Phase 1.1 | Complete |
+ | JSON-01 | Phase 2 | Complete |
+ | JSON-02 | Phase 2 | Complete |
+ | SQL-01 | Phase 3 | Complete |
+ | SQL-02 | Phase 3 | Complete |
+ | SQL-03 | Phase 3 | Complete |
+ | UI-01 | Phase 4 | Complete |
+ | UI-02 | Phase 4 | Complete |
+ 
  **Coverage:**
-- v1 requirements: 9 total
-- Mapped to phases: 9 ✓
-- Unmapped: 0
-- Completed: 8/9 (CAM-01, CAM-02, CAM-03, JSON-01, JSON-02, SQL-01, SQL-02, SQL-03)
+ - v1 requirements: 9 total
+ - Mapped to phases: 9 ✓
+ - Unmapped: 0
+ - Completed: 9/9 (CAM-01, CAM-02, CAM-03, JSON-01, JSON-02, SQL-01, SQL-02, SQL-03, UI-01, UI-02)
 
----
-*Requirements defined: 2026-02-01*
-*Last updated: 2026-02-01 after roadmap creation*
+ ---
+ *Requirements defined: 2026-02-01*
+ *Last updated: 2026-02-03 after Phase 4 completion*
