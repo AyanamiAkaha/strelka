@@ -1,3 +1,5 @@
+import { parseJsonData } from './validators'
+
 export interface PointData {
   // Array of [x, y, z] coordinates flattened: [x1, y1, z1, x2, y2, z2, ...]
   positions: Float32Array
@@ -84,47 +86,36 @@ export class DataProvider {
     }
   }
 
-
-
   /**
-   * Example: Load point data from a JSON file
-   * Uncomment and modify this if you want to load from files
+   * Load point data from a JSON file
+   * Uses FileReader to read file and delegates validation/parsing to parseJsonData()
+   *
+   * @param file - File object from file input or drag-and-drop
+   * @returns Promise<PointData> with parsed point data for WebGL
+   * @throws Error if file cannot be read or JSON is invalid
    */
-  /*
-  static async loadPointDataFromFile(url: string): Promise<PointData> {
-    try {
-      const response = await fetch(url)
-      if (!response.ok) {
-        throw new Error(`Failed to load data from ${url}`)
+  static async loadFromFile(file: File): Promise<PointData> {
+    const reader = new FileReader()
+    return new Promise((resolve, reject) => {
+      reader.onload = (e) => {
+        try {
+          const content = e.target?.result as string
+          const pointData = parseJsonData(content)
+          resolve(pointData)
+        } catch (error) {
+          reject(error)
+        }
       }
-      
-      const data = await response.json()
-      
-      // Assuming JSON format: { points: [[x, y, z, clusterId], ...] }
-      const positions = new Float32Array(data.points.length * 3)
-      const clusterIds = new Float32Array(data.points.length)
-      
-      data.points.forEach((point: [number, number, number, number], index: number) => {
-        positions[index * 3] = point[0]
-        positions[index * 3 + 1] = point[1]  
-        positions[index * 3 + 2] = point[2]
-        clusterIds[index] = point[3]
-      })
-      
-      return {
-        positions,
-        clusterIds,
-        count: data.points.length
+      reader.onerror = () => {
+        const error = new Error('Failed to read file')
+        console.error('FileReader error:', reader.error)
+        reject(error)
       }
-    } catch (error) {
-      console.error('Error loading point data:', error)
-      throw error
-    }
+      reader.readAsText(file)
+    })
   }
-  */
 
-  /**
-   * Example: Generate specific cluster patterns
+
    * You can create functions like this for different data patterns
    */
   static generateSpiralClusters(clusterCount: number = 5, pointsPerCluster: number = 200): PointData {
