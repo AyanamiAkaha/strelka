@@ -13,7 +13,6 @@
     <DataLoadControl
       @file-selected="handleLoadFile"
       @table-selected="handleTableSelected"
-      @file-loaded="(data: any) => { pointData = data; pointCount.value = data.positions.length / 3; setupBuffers(glCache) }"
       :is-loading="isLoading"
       :file="currentFile"
     />
@@ -99,13 +98,13 @@ const handleLoadFile = async (file: File, tableName?: string) => {
   currentFile.value = file
   try {
     if (file.name.endsWith('.json')) {
-      const pointData = await DataProvider.loadFromFile(file)
-      pointData.value = pointData
-      pointCount.value = pointData.positions.length / 3
+      const loadedData = await DataProvider.loadFromFile(file)
+      pointData = loadedData
+      pointCount.value = loadedData.positions.length / 3
       setupBuffers(glCache)
     } else if (file.name.endsWith('.db') || file.name.endsWith('.sqlite')) {
       const result = await DataProvider.loadSqliteFile(file, tableName)
-      pointData.value = result.pointData
+      pointData = result.pointData
       pointCount.value = result.pointData.positions.length / 3
       setupBuffers(glCache)
     }
