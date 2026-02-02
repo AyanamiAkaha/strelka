@@ -223,6 +223,8 @@ const switchToGenerated = async () => {
     currentDataSource.value = DataSource.GENERATED
   } catch (error) {
     console.error('Error switching to generated data:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    addError(message)
   } finally {
     isLoading.value = false
   }
@@ -263,6 +265,8 @@ const switchToLoaded = async () => {
     currentDataSource.value = DataSource.LOADED
   } catch (error) {
     console.error('Error switching to loaded data:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    addError(message)
   } finally {
     isLoading.value = false
   }
