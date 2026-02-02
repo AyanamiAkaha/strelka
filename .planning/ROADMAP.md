@@ -74,7 +74,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Plans**: 3 plans (in 3 waves)
 
-- [ ] 02-01-PLAN.md — Create JSON types and validation logic
+- [x] 02-01-PLAN.md — Create JSON types and validation logic
 - [ ] 02-02-PLAN.md — Add loadFromFile() method to DataProvider
 - [ ] 02-03-PLAN.md — Create DataLoadControl and integrate error panel
 
