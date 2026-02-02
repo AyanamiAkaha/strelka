@@ -197,6 +197,9 @@ const switchToGenerated = async () => {
   isLoading.value = true
 
   try {
+    // Clear errors before switching (auto-dismiss behavior)
+    clearErrors()
+
     // Clear old buffers to prevent memory leaks (Pitfall 1)
     if (positionBuffer) {
       glCache.deleteBuffer(positionBuffer)
@@ -231,6 +234,39 @@ const switchToLoaded = async () => {
     console.warn('No loaded file to switch to')
     return
   }
+
+  isLoading.value = true
+
+  try {
+    // Clear errors before switching (auto-dismiss behavior)
+    clearErrors()
+
+    // Clear old buffers to prevent memory leaks (Pitfall 1)
+    if (positionBuffer) {
+      glCache.deleteBuffer(positionBuffer)
+      positionBuffer = null
+    }
+    if (clusterIdBuffer) {
+      glCache.deleteBuffer(clusterIdBuffer)
+      clusterIdBuffer = null
+    }
+
+    // Reset camera to default (CONTEXT.md decision)
+    camera.value?.reset()
+
+    // Reset cluster highlighting to show all (Pitfall 8)
+    highlightedCluster.value = -1
+
+    // Reload current file
+    await handleLoadFile(currentFile.value)
+
+    currentDataSource.value = DataSource.LOADED
+  } catch (error) {
+    console.error('Error switching to loaded data:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
 
   isLoading.value = true
 
