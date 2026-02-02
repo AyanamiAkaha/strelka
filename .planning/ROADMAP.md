@@ -93,24 +93,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Plans**: 3 plans (in 3 waves)
 
-- [ ] 03-01-PLAN.md — Install sql.js and create initialization utility with schema validation
-- [ ] 03-02-PLAN.md — Implement SQLite file loading with table selection and data extraction
-- [ ] 03-03-PLAN.md — Integrate SQLite UI, add granular error handling, and loading state
-
-### Phase 4: Data Source Toggle & Error Display
-
-**Goal**: Users can switch between generated and loaded data with error visibility
-
-**Depends on**: Phase 3
-
-**Requirements**: UI-01, UI-02
-
-**Success Criteria** (what must be TRUE):
-1. User can toggle between generated data and loaded data source
-2. System displays errors for loading failures in the UI
-3. System shows appropriate error messages for both JSON and SQLite load failures
-
-**Plans**: TBD
+ - [ ] 03-01-PLAN.md — Install sql.js and create initialization utility with schema validation
+ - [ ] 03-02-PLAN.md — Implement SQLite file loading with table selection and data extraction
+ - [ ] 03-03-PLAN.md — Integrate SQLite UI, add granular error handling, and loading state
 
 ## Progress
 
