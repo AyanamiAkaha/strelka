@@ -113,11 +113,13 @@ export class DataProvider {
       }
       reader.readAsText(file)
     })
-  }
+   }
 
 
+  /**
+   * Example: Generate specific cluster patterns
    * You can create functions like this for different data patterns
-   */
+    */
   static generateSpiralClusters(clusterCount: number = 5, pointsPerCluster: number = 200): PointData {
     const totalPoints = clusterCount * pointsPerCluster
     const positions = new Float32Array(totalPoints * 3)
