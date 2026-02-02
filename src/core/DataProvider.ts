@@ -206,12 +206,12 @@ export class DataProvider {
           db.each(
             `SELECT x, y, z${tableInfo.hasCluster ? ', cluster' : ''} FROM ${tableName}`,
             {},
-            (row: unknown[]) => {
-              // Row is array of values in order of SELECT
-              positions[index * 3] = row[0] as number      // x
-              positions[index * 3 + 1] = row[1] as number  // y
-              positions[index * 3 + 2] = row[2] as number  // z
-              clusterIds[index] = tableInfo.hasCluster ? ((row[3] ?? -1) as number) : -1
+            (row: any) => {
+              // Row is object with column names as keys, not array
+              positions[index * 3] = row.x as number
+              positions[index * 3 + 1] = row.y as number
+              positions[index * 3 + 2] = row.z as number
+              clusterIds[index] = tableInfo.hasCluster ? (row.cluster as number ?? -1) : -1
               index++
             },
             () => {
