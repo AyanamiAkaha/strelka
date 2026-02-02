@@ -10,7 +10,13 @@
     />
     
     <ControlsOverlay />
-    <DataLoadControl @file-selected="handleLoadFile" />
+    <DataLoadControl
+      @file-selected="handleLoadFile"
+      @table-selected="handleTableSelected"
+      @file-loaded="(data: any) => { pointData = data; pointCount.value = data.positions.length / 3; setupBuffers(glCache) }"
+      :is-loading="isLoading"
+      :file="currentFile"
+    />
     <DebugInfo v-if="camera"
       :camera="camera!.toDebugInfo()"
       :point-count="pointCount"
@@ -50,6 +56,8 @@ const camera = ref<Camera>()
 const pointCount = ref(0)
 const fps = ref(0)
 const loadError = ref<string>('')
+const isLoading = ref(false)
+const currentFile = ref<File | null>(null)
 
 let animationId: number | null = null
 let fpsCounter = 0
@@ -81,18 +89,34 @@ const onWebGLError = (errorMessage: string) => {
   error.value = errorMessage
 }
 
-const handleLoadFile = async (file: File) => {
+const handleLoadFile = async (file: File, tableName?: string) => {
+  isLoading.value = true
+  currentFile.value = file
   try {
-    const newData = await DataProvider.loadFromFile(file)
-    pointData = newData
-    pointCount.value = newData.positions.length / 3
-    setupBuffers(glCache)
-    loadError.value = ''  // Clear error on success
-  } catch (e) {
-    const message = e instanceof Error ? e.message : 'Failed to load JSON file'
-    loadError.value = message
-    console.error('JSON load error:', e)
-    // pointData unchanged - keep current view (Pitfall 5)
+    if (file.name.endsWith('.json')) {
+      const pointData = await DataProvider.loadFromFile(file)
+      pointData.value = pointData
+      pointCount.value = pointData.positions.length / 3
+      setupBuffers(glCache)
+    } else if (file.name.endsWith('.db') || file.name.endsWith('.sqlite')) {
+      const result = await DataProvider.loadSqliteFile(file, tableName)
+      pointData.value = result.pointData
+      pointCount.value = result.pointData.positions.length / 3
+      setupBuffers(glCache)
+    }
+    loadError.value = null
+  } catch (error) {
+    console.error('Error loading file:', error)
+    loadError.value = error instanceof Error ? error.message : 'Error loading file'
+    // Preserve existing pointData on load failure (CONTEXT.md)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const handleTableSelected = (tableName: string) => {
+  if (currentFile.value) {
+    handleLoadFile(currentFile.value, tableName)
   }
 }
 

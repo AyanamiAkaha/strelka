@@ -34,12 +34,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { DataProvider } from '@/core/DataProvider'
 
 const emit = defineEmits<{
   'file-selected': [file: File],
-  'file-loaded': [data: any]
+  'table-selected': [tableName: string]
+}>()
+
+const props = defineProps<{
+  file: File | null
 }>()
 
 const fileInputRef = ref<HTMLInputElement>()
@@ -119,7 +123,7 @@ const handleTableChange = async () => {
     isLoading.value = true
     try {
       const result = await DataProvider.loadSqliteFile(currentFile.value, selectedTable.value)
-      emit('file-loaded', result.pointData)
+      emit('table-selected', selectedTable.value)
       isLoading.value = false
     } catch (error) {
       isLoading.value = false
@@ -128,6 +132,11 @@ const handleTableChange = async () => {
     }
   }
 }
+
+// Watch for prop file changes (for table selection reload)
+watch(() => props.file, (newFile) => {
+  currentFile.value = newFile
+})
 </script>
 
 <style scoped>
