@@ -29,10 +29,18 @@
       <p>{{ error }}</p>
     </div>
 
-    <div v-if="loadError" class="load-error-panel">
-      <h3>Loading Error</h3>
-      <p>{{ loadError }}</p>
-      <button @click="clearLoadError">Dismiss</button>
+    <!-- Error panel - collapsible with red accent -->
+    <div v-if="errors.length > 0" class="error-panel">
+      <div class="error-header" @click="toggleErrorPanel">
+        <h3>Errors: {{ errors.length }}</h3>
+        <button class="toggle-btn">{{ errorPanelExpanded ? '▼' : '▶' }}</button>
+      </div>
+      <div v-if="errorPanelExpanded" class="error-list">
+        <div v-for="error in errors" :key="error.id" class="error-item">
+          <span class="error-message">{{ error.message }}</span>
+          <button @click.stop="dismissError(error.id)" class="dismiss-btn">×</button>
+        </div>
+      </div>
     </div>
 
     <!-- Loading overlay blocks UI during data loading -->
@@ -55,18 +63,58 @@ import { highlightedCluster, ppc } from '@/composables/settings'
 
 console.log('WebGLPlayground script setup running...')
 
+interface ErrorInfo {
+  id: string
+  message: string
+  timestamp: number
+}
+
 const canvasRef = ref<InstanceType<typeof WebGLCanvas>>()
 const error = ref<string>('')
 const camera = ref<Camera>()
 const pointCount = ref(0)
 const fps = ref(0)
-const loadError = ref<string>('')
+
+// Error array for multiple error management
+const errors = ref<ErrorInfo[]>([])
+const errorPanelExpanded = ref(false)
+
 const isLoading = ref(false)
 const currentFile = ref<File | null>(null)
 
 enum DataSource { GENERATED = 'generated', LOADED = 'loaded' }
 
 const currentDataSource = ref<DataSource>(DataSource.GENERATED)
+
+// Error management functions
+const addError = (message: string) => {
+  errors.value.push({
+    id: Date.now().toString(),
+    message,
+    timestamp: Date.now()
+  })
+  // Auto-expand panel when error added
+  errorPanelExpanded.value = true
+}
+
+const clearErrors = () => {
+  errors.value = []
+}
+
+const dismissError = (id: string) => {
+  const index = errors.value.findIndex(e => e.id === id)
+  if (index !== -1) {
+    errors.value.splice(index, 1)
+  }
+  // Collapse panel if no errors remain
+  if (errors.value.length === 0) {
+    errorPanelExpanded.value = false
+  }
+}
+
+const toggleErrorPanel = () => {
+  errorPanelExpanded.value = !errorPanelExpanded.value
+}
 
 let animationId: number | null = null
 let fpsCounter = 0
@@ -89,9 +137,17 @@ const onWebGLReady = (gl: WebGL2RenderingContext | WebGLRenderingContext) => {
 }
 
 const regenPoints = () => {
-  pointData = DataProvider.getPointData(ppc.value)
-  pointCount.value = pointData.positions.length / 3
-  setupBuffers(glCache)
+  try {
+    pointData = DataProvider.getPointData(ppc.value)
+    pointCount.value = pointData.positions.length / 3
+    setupBuffers(glCache)
+
+    // Clear errors on successful data generation
+    clearErrors()
+  } catch (error) {
+    console.error('Error regenerating points:', error)
+    addError('Failed to regenerate data')
+  }
 }
 
 const onWebGLError = (errorMessage: string) => {
@@ -111,16 +167,21 @@ const handleLoadFile = async (file: File, tableName?: string) => {
       const result = await DataProvider.loadSqliteFile(file, tableName)
       pointData = result.pointData
       pointCount.value = result.pointData.positions.length / 3
-      console.log('Loaded point data from SQLite file:', pointData.positions.slice(0, 10), '...; total points:', pointCount.value), 
+      console.log('Loaded point data from SQLite file:', pointData.positions.slice(0, 10), '...; total points:', pointCount.value),
       setupBuffers(glCache)
     }
-    loadError.value = ''
+
+    // Clear errors on successful load (auto-dismiss behavior)
+    clearErrors()
+    currentDataSource.value = DataSource.LOADED  // Set data source on successful load
   } catch (error) {
     console.error('Error loading file:', error)
-    loadError.value = error instanceof Error ? error.message : 'Error loading file'
-    // Preserve existing pointData on load failure (CONTEXT.md)
+    // Brief message in UI, full details in console (CONTEXT.md decision)
+    const briefMessage = error instanceof Error ? error.message : 'Error loading file'
+    addError(briefMessage)
+
+    // Preserve existing pointData on load failure (existing behavior)
   } finally {
-    currentDataSource.value = DataSource.LOADED  // Set data source on successful load
     isLoading.value = false
   }
 }
@@ -201,10 +262,7 @@ const switchToLoaded = async () => {
   }
 }
 
-const clearLoadError = () => {
-  loadError.value = ''
-}
-
+// Old clearLoadError function replaced by clearErrors() from error array system
 const onMouseMove = (event: { deltaX: number, deltaY: number, buttons: number }) => {
   if (camera.value && event.buttons > 0) {
     camera.value.handleMouseMove(event.deltaX, event.deltaY)
@@ -411,5 +469,104 @@ onUnmounted(() => {
   border-radius: 8px;
   font-family: monospace;
   font-size: 14px;
+}
+
+.error-panel {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid #f44336;
+  border-radius: 8px;
+  color: white;
+  font-size: 11px;
+  font-family: monospace;
+  max-width: 300px;
+  max-height: 400px;
+  z-index: 150;
+  backdrop-filter: blur(5px);
+  overflow: hidden;
+}
+
+.error-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(244, 67, 54, 0.2);
+  cursor: pointer;
+  border-bottom: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+.error-header h3 {
+  margin: 0;
+  color: #ffcdd2;
+  font-size: 12px;
+}
+
+.toggle-btn {
+  background: transparent;
+  border: none;
+  color: #f44336;
+  cursor: pointer;
+  font-size: 10px;
+  padding: 0;
+}
+
+.error-list {
+  max-height: 350px;
+  overflow-y: auto;
+  padding: 0;
+  margin: 0;
+}
+
+.error-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background: rgba(244, 67, 54, 0.1);
+  border-left: 3px solid #f44336;
+  margin-bottom: 4px;
+}
+
+.error-item:last-child {
+  margin-bottom: 0;
+}
+
+.error-message {
+  flex: 1;
+  word-wrap: break-word;
+  padding-right: 8px;
+  color: #ffcdd2;
+}
+
+.dismiss-btn {
+  background: transparent;
+  border: none;
+  color: #f44336;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0;
+  margin-left: 4px;
+  flex-shrink: 0;
+}
+
+.dismiss-btn:hover {
+  color: #ff8a80;
+}
+
+.error-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.error-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.error-list::-webkit-scrollbar-thumb {
+  background: rgba(244, 67, 54, 0.5);
+  border-radius: 3px;
 }
 </style>
