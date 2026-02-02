@@ -142,7 +142,7 @@ watch(() => props.file, (newFile) => {
 <style scoped>
 .data-load-control {
   position: absolute;
-  top: 20px;
+  top: 120px;
   left: 20px;
   z-index: 100;
 }
