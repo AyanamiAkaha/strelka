@@ -19,9 +19,9 @@ Requirements for initial data loading milestone. Each maps to roadmap phases.
 
 ### Data Loading - SQLite
 
-- [ ] **SQL-01**: System loads .db files using sql.js WebAssembly library
-- [ ] **SQL-02**: System queries flat table with x, y, z, cluster columns
-- [ ] **SQL-03**: System displays simple error messages for corrupt databases
+- [x] **SQL-01**: System loads .db files using sql.js WebAssembly library
+- [x] **SQL-02**: System queries flat table with x, y, z, cluster columns
+- [x] **SQL-03**: System displays simple error messages for corrupt databases
 
 ### UI
 
@@ -73,24 +73,24 @@ Explicitly excluded. Documented to prevent scope creep.
 
 Which phases cover which requirements. Updated during roadmap creation.
 
-| Requirement | Phase | Status |
+ | Requirement | Phase | Status |
 |-------------|-------|--------|
 | CAM-01 | Phase 1 | Complete |
 | CAM-02 | Phase 1 | Complete |
 | CAM-03 | Phase 1.1 | Complete |
 | JSON-01 | Phase 2 | Complete |
 | JSON-02 | Phase 2 | Complete |
-| SQL-01 | Phase 3 | Pending |
-| SQL-02 | Phase 3 | Pending |
-| SQL-03 | Phase 3 | Pending |
+| SQL-01 | Phase 3 | Complete |
+| SQL-02 | Phase 3 | Complete |
+| SQL-03 | Phase 3 | Complete |
 | UI-01 | Phase 4 | Pending |
 | UI-02 | Phase 4 | Pending |
 
-**Coverage:**
+ **Coverage:**
 - v1 requirements: 9 total
 - Mapped to phases: 9 ✓
 - Unmapped: 0
-- Completed: 5/9 (CAM-01, CAM-02, CAM-03, JSON-01, JSON-02)
+- Completed: 8/9 (CAM-01, CAM-02, CAM-03, JSON-01, JSON-02, SQL-01, SQL-02, SQL-03)
 
 ---
 *Requirements defined: 2026-02-01*
