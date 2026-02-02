@@ -134,7 +134,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 3. SQLite files do not create empty buffers before table selection
 4. Syntax error in DataProvider.ts is fixed
 
-**Plans**: 4 plans (in 4 waves)
+**Plans**: 4 plans (in 1 wave)
 
   - [ ] 05-01-PLAN.md — Add buffer cleanup to setupBuffers()
   - [ ] 05-02-PLAN.md — Remove duplicate JSON loading in DataLoadControl
