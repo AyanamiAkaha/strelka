@@ -166,6 +166,13 @@ const handleLoadFile = async (file: File, tableName?: string) => {
       pointCount.value = loadedData.positions.length / 3
       setupBuffers(glCache)
     } else if (file.name.endsWith('.db') || file.name.endsWith('.sqlite')) {
+      // GUARD: Don't load without tableName
+      if (!tableName) {
+        console.log('SQLite file selected, waiting for table choice')
+        isLoading.value = false
+        return  // EXIT: No buffers created
+      }
+
       const result = await DataProvider.loadSqliteFile(file, tableName)
       pointData = result.pointData
       pointCount.value = result.pointData.positions.length / 3
@@ -387,6 +394,17 @@ const setupShaders = (gl: WebGL2RenderingContext | WebGLRenderingContext) => {
 }
 
 const setupBuffers = (gl: WebGL2RenderingContext | WebGLRenderingContext) => {
+  // Delete old buffers first (prevents GPU memory leak)
+  if (positionBuffer) {
+    gl.deleteBuffer(positionBuffer)
+    positionBuffer = null
+  }
+  if (clusterIdBuffer) {
+    gl.deleteBuffer(clusterIdBuffer)
+    clusterIdBuffer = null
+  }
+
+  // Create new buffers
   positionBuffer = gl.createBuffer()
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
   gl.bufferData(gl.ARRAY_BUFFER, pointData!.positions, gl.STATIC_DRAW)
