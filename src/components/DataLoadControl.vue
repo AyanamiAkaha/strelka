@@ -23,12 +23,18 @@
         id="table-select"
         v-model="selectedTable"
         :disabled="isLoading"
-        @change="handleTableChange"
       >
         <option v-for="name in availableTables" :key="name" :value="name">
           {{ name }}
         </option>
       </select>
+      <button
+        class="load-table-btn"
+        @click="handleTableChange"
+        :disabled="isLoading || !selectedTable"
+      >
+        Load
+      </button>
     </div>
   </div>
 </template>
@@ -185,5 +191,27 @@ watch(() => props.file, (newFile) => {
 
 .table-selection select:hover:not(:disabled) {
   background: rgba(76, 175, 80, 0.3);
+}
+
+.load-table-btn {
+  background: rgba(0, 0, 0, 0.8);
+  color: #4CAF50;
+  border: 1px solid #4CAF50;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: monospace;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.load-table-btn:hover:not(:disabled) {
+  background: rgba(76, 175, 80, 0.3);
+  color: #69F0AE;
+}
+
+.load-table-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>
