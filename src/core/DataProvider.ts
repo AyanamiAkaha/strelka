@@ -1,4 +1,12 @@
+import initSqlJs from 'sql.js'
 import { parseJsonData } from './validators'
+
+// Initialize sql.js module with WebAssembly support
+const SQL = await initSqlJs({
+  locateFile: (file: string) => {
+    return `/node_modules/sql.js/dist/${file}`
+  }
+})
 
 export interface PointData {
   // Array of [x, y, z] coordinates flattened: [x1, y1, z1, x2, y2, z2, ...]
@@ -11,17 +19,25 @@ export interface PointData {
   count: number
 }
 
-/**
- * Data provider for point cluster generation
- * 
- * This is intentionally left as a simple interface/stub.
- * You can implement your own data generation logic here:
- * - Load from files (JSON, binary, etc.)
- * - Generate procedurally
- * - Fetch from APIs
- * - Read from databases
- */
+ /**
+  * Data provider for point cluster generation
+  *
+  * This is intentionally left as a simple interface/stub.
+  * You can implement your own data generation logic here:
+  * - Load from files (JSON, binary, etc.)
+  * - Generate procedurally
+  * - Fetch from APIs
+  * - Read from databases
+  */
 export class DataProvider {
+
+  /**
+   * Get the initialized sql.js module for SQLite operations
+   * @returns Initialized SQL module ready for database operations
+   */
+  static async initSqliteModule(): Promise<any> {
+    return SQL
+  }
   
   /**
    * Main function to get point data
