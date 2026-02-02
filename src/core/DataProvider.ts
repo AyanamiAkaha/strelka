@@ -31,16 +31,16 @@ export interface PointData {
   count: number
 }
 
- /**
-  * Data provider for point cluster generation
-  *
-  * This is intentionally left as a simple interface/stub.
-  * You can implement your own data generation logic here:
-  * - Load from files (JSON, binary, etc.)
-  * - Generate procedurally
-  * - Fetch from APIs
-  * - Read from databases
-  */
+/**
+ * Data provider for point cluster generation
+ *
+ * This is intentionally left as a simple interface/stub.
+ * You can implement your own data generation logic here:
+ * - Load from files (JSON, binary, etc.)
+ * - Generate procedurally
+ * - Fetch from APIs
+ * - Read from databases
+ */
 export class DataProvider {
 
   /**
