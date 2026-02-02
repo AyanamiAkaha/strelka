@@ -91,7 +91,11 @@ Decimal phases appear between their surrounding integers in numeric order.
 2. System queries flat table with x, y, z, cluster columns
 3. System displays error message when database is corrupt or unreadable
 
-**Plans**: TBD
+**Plans**: 3 plans (in 3 waves)
+
+- [ ] 03-01-PLAN.md — Install sql.js and create initialization utility with schema validation
+- [ ] 03-02-PLAN.md — Implement SQLite file loading with table selection and data extraction
+- [ ] 03-03-PLAN.md — Integrate SQLite UI, add granular error handling, and loading state
 
 ### Phase 4: Data Source Toggle & Error Display
 
@@ -118,5 +122,5 @@ Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4
 |  1. Camera Rotation Fix | 3/3 | Complete | 2026-02-02 |
 |  1.1. Implement Quaternion-Based Camera | 5/5 | Complete | 2026-02-02 |
  |  2. JSON Data Loader | 3/3 | Complete | 2026-02-02 |
-|  3. SQLite Data Loader | 0/TBD | Not started | - |
+|  3. SQLite Data Loader | 0/3 | Not started | - |
 |  4. Data Source Toggle & Error Display | 0/TBD | Not started | - |
