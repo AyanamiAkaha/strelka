@@ -274,36 +274,6 @@ const switchToLoaded = async () => {
   }
 }
 
-  isLoading.value = true
-
-  try {
-    // Clear old buffers to prevent memory leaks (Pitfall 1)
-    if (positionBuffer) {
-      glCache.deleteBuffer(positionBuffer)
-      positionBuffer = null
-    }
-    if (clusterIdBuffer) {
-      glCache.deleteBuffer(clusterIdBuffer)
-      clusterIdBuffer = null
-    }
-
-    // Reset camera to default (CONTEXT.md decision)
-    camera.value?.reset()
-
-    // Reset cluster highlighting to show all (Pitfall 8)
-    highlightedCluster.value = -1
-
-    // Reload the current file
-    await handleLoadFile(currentFile.value)
-
-    currentDataSource.value = DataSource.LOADED
-  } catch (error) {
-    console.error('Error switching to loaded data:', error)
-  } finally {
-    isLoading.value = false
-  }
-}
-
 // Old clearLoadError function replaced by clearErrors() from error array system
 const onMouseMove = (event: { deltaX: number, deltaY: number, buttons: number }) => {
   if (camera.value && event.buttons > 0) {
