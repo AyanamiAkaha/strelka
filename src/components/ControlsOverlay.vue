@@ -1,5 +1,14 @@
 <template>
   <div class="controls-overlay">
+    <div class="data-loading">
+      <h4>Data Loading</h4>
+      <DataLoadControl
+        @file-selected="handleFileSelected"
+        @table-selected="handleTableSelected"
+        :is-loading="isLoading"
+        :file="currentFile"
+      />
+    </div>
     <div>
       <h4>Controls</h4>
       <ul>
@@ -46,9 +55,28 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { highlightedCluster, ppc } from '@/composables/settings';
+import DataLoadControl from './DataLoadControl.vue';
+
+const emit = defineEmits<{
+  'file-selected': [file: File],
+  'table-selected': [tableName: string]
+}>()
+
+const props = defineProps<{
+  isLoading: boolean
+  currentFile: File | null
+}>()
 
 const ppcMagnitude = ref(4)
 const ppcSlider = ref(1)
+
+const handleFileSelected = (file: File) => {
+  emit('file-selected', file)
+}
+
+const handleTableSelected = (tableName: string) => {
+  emit('table-selected', tableName)
+}
 
 watch([ppcSlider, ppcMagnitude], () => {
   ppc.value = 10**ppcMagnitude.value * ppcSlider.value;
@@ -69,6 +97,10 @@ watch([ppcSlider, ppcMagnitude], () => {
   max-width: 200px;
   z-index: 100;
   backdrop-filter: blur(5px);
+}
+
+.controls-overlay .data-loading {
+  margin-bottom: 15px;
 }
 
 .controls-overlay h4 {

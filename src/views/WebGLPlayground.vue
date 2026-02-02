@@ -9,12 +9,11 @@
       @key-event="onKeyEvent"
     />
     
-    <ControlsOverlay />
-    <DataLoadControl
+    <ControlsOverlay
       @file-selected="handleLoadFile"
       @table-selected="handleTableSelected"
       :is-loading="isLoading"
-      :file="currentFile"
+      :current-file="currentFile"
     />
     <DebugInfo v-if="camera"
       :camera="camera!.toDebugInfo()"
@@ -45,7 +44,6 @@ import { ref, onMounted, onUnmounted, watch } from 'vue'
 import WebGLCanvas from '@/components/WebGLCanvas.vue'
 import ControlsOverlay from '@/components/ControlsOverlay.vue'
 import DebugInfo from '@/components/DebugInfo.vue'
-import DataLoadControl from '@/components/DataLoadControl.vue'
 import { Camera } from '@/core/Camera'
 import { DataProvider, PointData } from '@/core/DataProvider'
 import { ShaderManager } from '@/core/ShaderManager'
