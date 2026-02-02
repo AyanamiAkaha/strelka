@@ -112,9 +112,8 @@ const processFile = async (file: File) => {
         selectedTable.value = result.tables[0]
       }
     } else {
-      // JSON file - keep existing behavior
+      // JSON: emit only file reference, no data loading
       isLoading.value = true
-      const pointData = await DataProvider.loadFromFile(file)
       emit('file-selected', file)
       isLoading.value = false
     }
