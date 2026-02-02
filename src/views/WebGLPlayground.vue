@@ -45,7 +45,9 @@
 
     <!-- Loading overlay blocks UI during data loading -->
     <div v-if="isLoading" class="loading-overlay">
-      <div class="loading-message">Loading data...</div>
+      <div class="loading-message">
+        {{ currentDataSource === 'generated' ? 'Generating data...' : 'Loading data...' }}
+      </div>
     </div>
   </div>
 </template>
