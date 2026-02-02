@@ -9,6 +9,25 @@
         :file="currentFile"
       />
     </div>
+    <div class="data-source-controls">
+      <div class="data-source-label">Data Source:</div>
+      <div class="data-source-buttons">
+        <button
+          class="data-source-btn"
+          :class="{ active: currentDataSource === 'generated' }"
+          @click="emit('switch-to-generated')"
+        >
+          Generate
+        </button>
+        <button
+          class="data-source-btn"
+          :class="{ active: currentDataSource === 'loaded' }"
+          @click="emit('switch-to-loaded')"
+        >
+          Load
+        </button>
+      </div>
+    </div>
     <div>
       <h4>Controls</h4>
       <ul>
@@ -59,12 +78,15 @@ import DataLoadControl from './DataLoadControl.vue';
 
 const emit = defineEmits<{
   'file-selected': [file: File],
-  'table-selected': [tableName: string]
+  'table-selected': [tableName: string],
+  'switch-to-generated': [],
+  'switch-to-loaded': []
 }>()
 
 const props = defineProps<{
   isLoading: boolean
   currentFile: File | null
+  currentDataSource: 'generated' | 'loaded'
 }>()
 
 const ppcMagnitude = ref(4)
@@ -115,5 +137,47 @@ watch([ppcSlider, ppcMagnitude], () => {
 
 .controls-overlay li {
   margin-bottom: 4px;
+}
+
+.data-source-controls {
+  margin-top: 12px;
+  margin-bottom: 15px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.data-source-label {
+  color: #4CAF50;
+  font-size: 11px;
+  font-family: monospace;
+  margin-bottom: 6px;
+}
+
+.data-source-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.data-source-btn {
+  background: rgba(0, 0, 0, 0.8);
+  color: #4CAF50;
+  border: 1px solid #4CAF50;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: monospace;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  flex: 1;
+}
+
+.data-source-btn:hover {
+  background: rgba(76, 175, 80, 0.2);
+  color: #69F0AE;
+}
+
+.data-source-btn.active {
+  background: rgba(76, 175, 80, 0.3);
+  color: #69F0AE;
 }
 </style>
