@@ -75,7 +75,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans (in 3 waves)
 
 - [x] 02-01-PLAN.md — Create JSON types and validation logic
-- [ ] 02-02-PLAN.md — Add loadFromFile() method to DataProvider
+- [x] 02-02-PLAN.md — Add loadFromFile() method to DataProvider
 - [ ] 02-03-PLAN.md — Create DataLoadControl and integrate error panel
 
 ### Phase 3: SQLite Data Loader
@@ -117,6 +117,6 @@ Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 |  1. Camera Rotation Fix | 3/3 | Complete | 2026-02-02 |
 |  1.1. Implement Quaternion-Based Camera | 5/5 | Complete | 2026-02-02 |
-|  2. JSON Data Loader | 0/TBD | Not started | - |
+|  2. JSON Data Loader | 2/3 | In progress | - |
 |  3. SQLite Data Loader | 0/TBD | Not started | - |
 |  4. Data Source Toggle & Error Display | 0/TBD | Not started | - |
