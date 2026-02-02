@@ -10,6 +10,7 @@
     />
     
     <ControlsOverlay />
+    <DataLoadControl @file-selected="handleLoadFile" />
     <DebugInfo v-if="camera"
       :camera="camera!.toDebugInfo()"
       :point-count="pointCount"
@@ -20,6 +21,12 @@
       <h3>WebGL Error</h3>
       <p>{{ error }}</p>
     </div>
+
+    <div v-if="loadError" class="load-error-panel">
+      <h3>Loading Error</h3>
+      <p>{{ loadError }}</p>
+      <button @click="clearLoadError">Dismiss</button>
+    </div>
   </div>
 </template>
 
@@ -28,6 +35,7 @@ import { ref, onMounted, onUnmounted, watch } from 'vue'
 import WebGLCanvas from '@/components/WebGLCanvas.vue'
 import ControlsOverlay from '@/components/ControlsOverlay.vue'
 import DebugInfo from '@/components/DebugInfo.vue'
+import DataLoadControl from '@/components/DataLoadControl.vue'
 import { Camera } from '@/core/Camera'
 import { DataProvider, PointData } from '@/core/DataProvider'
 import { ShaderManager } from '@/core/ShaderManager'
@@ -41,6 +49,7 @@ const error = ref<string>('')
 const camera = ref<Camera>()
 const pointCount = ref(0)
 const fps = ref(0)
+const loadError = ref<string>('')
 
 let animationId: number | null = null
 let fpsCounter = 0
@@ -70,6 +79,25 @@ const regenPoints = () => {
 
 const onWebGLError = (errorMessage: string) => {
   error.value = errorMessage
+}
+
+const handleLoadFile = async (file: File) => {
+  try {
+    const newData = await DataProvider.loadFromFile(file)
+    pointData = newData
+    pointCount.value = newData.positions.length / 3
+    setupBuffers(glCache)
+    loadError.value = ''  // Clear error on success
+  } catch (e) {
+    const message = e instanceof Error ? e.message : 'Failed to load JSON file'
+    loadError.value = message
+    console.error('JSON load error:', e)
+    // pointData unchanged - keep current view (Pitfall 5)
+  }
+}
+
+const clearLoadError = () => {
+  loadError.value = ''
 }
 
 const onMouseMove = (event: { deltaX: number, deltaY: number, buttons: number }) => {
@@ -203,3 +231,57 @@ onUnmounted(() => {
   }
 })
 </script>
+
+<style scoped>
+.webgl-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.error-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 0, 0, 0.9);
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  z-index: 1000;
+}
+
+.error-overlay h3 {
+  margin: 0 0 10px 0;
+  color: #ff6b6b;
+}
+
+.load-error-panel {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 0, 0, 0.9);
+  color: white;
+  padding: 15px;
+  border-radius: 8px;
+  max-width: 400px;
+  text-align: center;
+  z-index: 100;
+}
+
+.load-error-panel h3 {
+  margin: 0 0 10px 0;
+}
+
+.load-error-panel button {
+  margin-top: 10px;
+  padding: 5px 10px;
+  background: white;
+  color: red;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+</style>
