@@ -118,18 +118,9 @@ const processFile = async (file: File) => {
   }
 }
 
-const handleTableChange = async () => {
-  if (selectedTable.value && currentFile.value) {
-    isLoading.value = true
-    try {
-      const result = await DataProvider.loadSqliteFile(currentFile.value, selectedTable.value)
-      emit('table-selected', selectedTable.value)
-      isLoading.value = false
-    } catch (error) {
-      isLoading.value = false
-      // Re-emit file-selected to trigger error handling
-      emit('file-selected', currentFile.value)
-    }
+const handleTableChange = () => {
+  if (selectedTable.value) {
+    emit('table-selected', selectedTable.value)
   }
 }
 
