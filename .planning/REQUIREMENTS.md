@@ -14,8 +14,8 @@ Requirements for initial data loading milestone. Each maps to roadmap phases.
 
 ### Data Loading - JSON
 
-- [ ] **JSON-01**: User can select .json file via file picker dialog
-- [ ] **JSON-02**: System parses JSON with simple validation and surfaces errors to UI
+- [x] **JSON-01**: User can select .json file via file picker dialog
+- [x] **JSON-02**: System parses JSON with simple validation and surfaces errors to UI
 
 ### Data Loading - SQLite
 
@@ -78,8 +78,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CAM-01 | Phase 1 | Complete |
 | CAM-02 | Phase 1 | Complete |
 | CAM-03 | Phase 1.1 | Complete |
-| JSON-01 | Phase 2 | Pending |
-| JSON-02 | Phase 2 | Pending |
+| JSON-01 | Phase 2 | Complete |
+| JSON-02 | Phase 2 | Complete |
 | SQL-01 | Phase 3 | Pending |
 | SQL-02 | Phase 3 | Pending |
 | SQL-03 | Phase 3 | Pending |
@@ -90,7 +90,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 - v1 requirements: 9 total
 - Mapped to phases: 9 ✓
 - Unmapped: 0
-- Completed: 3/9 (CAM-01, CAM-02, CAM-03)
+- Completed: 5/9 (CAM-01, CAM-02, CAM-03, JSON-01, JSON-02)
 
 ---
 *Requirements defined: 2026-02-01*
