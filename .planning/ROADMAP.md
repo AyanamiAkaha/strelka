@@ -95,7 +95,27 @@ Decimal phases appear between their surrounding integers in numeric order.
 
   - [x] 03-01-PLAN.md — Install sql.js and create initialization utility with schema validation
   - [x] 03-02-PLAN.md — Implement SQLite file loading with table selection and data extraction
-  - [x] 03-03-PLAN.md — Integrate SQLite UI, add granular error handling, and loading state
+   - [x] 03-03-PLAN.md — Integrate SQLite UI, add granular error handling, and loading state
+
+### Phase 4: Data Source Toggle & Error Display
+
+**Goal**: Users can toggle between generated data and loaded data sources, with unified error display for loading failures
+
+**Depends on**: Phase 3
+
+**Requirements**: UI-01, UI-02
+
+**Success Criteria** (what must be TRUE):
+1. User can toggle between Generate and Load data sources via buttons
+2. Camera resets to default position when switching data sources
+3. Errors from loading operations appear in collapsible error panel
+4. Errors auto-dismiss when new data loads successfully
+
+**Plans**: 3 plans (in 2 waves)
+
+ - [ ] 04-01-PLAN.md — Add data source toggle UI and state management
+ - [ ] 04-02-PLAN.md — Implement error display system with collapsible panel
+ - [ ] 04-03-PLAN.md — Integrate switching with error handling and verify workflow
 
 ## Progress
 
@@ -108,4 +128,4 @@ Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4
 |  1.1. Implement Quaternion-Based Camera | 5/5 | Complete | 2026-02-02 |
 |  2. JSON Data Loader | 3/3 | Complete | 2026-02-02 |
 |  3. SQLite Data Loader | 3/3 | Complete | 2026-02-03 |
-|  4. Data Source Toggle & Error Display | 0/TBD | Not started | - |
+ | 4. Data Source Toggle & Error Display | 0/3 | Not started | - |
