@@ -421,6 +421,37 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  // WebGL resource cleanup (prevents GPU memory leaks)
+  const gl = glCache
+  if (!gl) return
+
+  // Delete resources in reverse order of creation
+  // 1. Delete shader program first (depends on shaders)
+  if (shaderProgram) {
+    gl.deleteProgram(shaderProgram)
+    shaderProgram = null
+  }
+
+  // 2. Delete shaders (held by ShaderManager)
+  if (shaderManager) {
+    shaderManager.cleanup()
+    shaderManager = null
+  }
+
+  // 3. Delete buffers
+  if (positionBuffer) {
+    gl.deleteBuffer(positionBuffer)
+    positionBuffer = null
+  }
+  if (clusterIdBuffer) {
+    gl.deleteBuffer(clusterIdBuffer)
+    clusterIdBuffer = null
+  }
+
+  // Clear context reference
+  glCache = null as any
+
+  // Cancel animation frame
   if (animationId) {
     cancelAnimationFrame(animationId)
   }
