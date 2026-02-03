@@ -364,8 +364,10 @@ const startRenderLoop = () => {
           }
           
           // Draw points
-          gl.drawArrays(gl.POINTS, 0, pointCount.value)
-          
+          if (pointCount.value > 0) {
+            gl.drawArrays(gl.POINTS, 0, pointCount.value)
+          }
+
           error = gl.getError()
           if (error !== gl.NO_ERROR) {
             console.error('WebGL error after draw:', error)
