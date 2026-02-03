@@ -157,9 +157,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Plans**: 3 plans (in 2 waves)
 
-  - [ ] 06-01-PLAN.md — Add pointCount guard to render loop
-  - [ ] 06-02-PLAN.md — Add WebGL cleanup to onUnmounted()
-  - [ ] 06-03-PLAN.md — Unify loading state across components
+  - [x] 06-01-PLAN.md — Add pointCount guard to render loop
+  - [x] 06-02-PLAN.md — Add WebGL cleanup to onUnmounted()
+  - [x] 06-03-PLAN.md — Unify loading state across components
 
 ### Phase 7: Documentation Cleanup
 
