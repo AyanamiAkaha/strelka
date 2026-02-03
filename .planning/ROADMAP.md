@@ -155,7 +155,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 2. WebGL resources cleaned up on component unmount
 3. Loading state is unified between DataLoadControl and WebGLPlayground
 
-**Plans**: 3 plans (in 3 waves)
+**Plans**: 3 plans (in 2 waves)
 
   - [ ] 06-01-PLAN.md — Add pointCount guard to render loop
   - [ ] 06-02-PLAN.md — Add WebGL cleanup to onUnmounted()
