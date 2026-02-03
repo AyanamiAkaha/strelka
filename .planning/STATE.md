@@ -17,18 +17,18 @@ Last activity: 2026-02-03 - Completed Phase 5 all GPU memory and loading fixes
 ## Current Position
 
 Phase: 6 of 8 (Performance & UX Improvements)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-02-04 - Completed 06-01-PLAN.md
+Last activity: 2026-02-03 - Completed 06-02-PLAN.md
 
-Progress: [██████████████] 88%
+Progress: [██████████████] 89%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 21 (Phase 1: 3, Phase 1.1: 5, Phase 2: 3, Phase 3: 3, Phase 4: 3, Phase 5: 2)
+- Total plans completed: 22 (Phase 1: 3, Phase 1.1: 5, Phase 2: 3, Phase 3: 3, Phase 4: 3, Phase 5: 4, Phase 6: 1)
 - Average duration: 2.1 min
-- Total execution time: 0.71 hours
+- Total execution time: 0.78 hours
 
 **By Phase:**
 
@@ -111,8 +111,11 @@ Recent decisions affecting current work:
      - Phase 04-03: clearErrors() called in both switchToGenerated and switchToLoaded (auto-dismiss behavior)
      - Phase 04-03: switchToGenerated and switchToLoaded have try/catch with addError() calls (comprehensive error handling)
      - Phase 04-03: Loading overlay message shows "Generating data..." for generated, "Loading data..." for loaded (contextual feedback)
-    - Phase 06-01: Add guard clause (if pointCount.value > 0) before drawArrays() to prevent unnecessary GPU draw calls and WebGL errors
- 
+     - Phase 06-01: Add guard clause (if pointCount.value > 0) before drawArrays() to prevent unnecessary GPU draw calls and WebGL errors
+     - Phase 06-02: Delete WebGL resources in onUnmounted() in reverse order of creation (programs → shaders → buffers) per MDN best practices
+     - Phase 06-02: Null out all resource references after deletion to prevent use-after-free bugs
+     - Phase 06-02: Add glCache null check before resource deletion to prevent errors if context is not available
+   
 ### Pending Todos
 
 From .planning/todos/pending/ — ideas captured during sessions
@@ -145,12 +148,13 @@ None. Phase 5 in progress - GPU memory and loading issues being addressed. Remai
     - Phase 5 in progress: Fix GPU Memory & Loading Issues (2/4 plans complete)
       - Phase 05-03: Guarded SQLite data loading to prevent empty buffer creation
      - Phase 05-04: Fixed JSDoc comment syntax in DataProvider class
-    - Phase 6 in progress: Performance & UX Improvements (1/3 plans complete)
-      - Phase 06-01: Guarded drawArrays() call with pointCount > 0 check to prevent unnecessary GPU cycles
+     - Phase 6 in progress: Performance & UX Improvements (2/3 plans complete)
+       - Phase 06-01: Guarded drawArrays() call with pointCount > 0 check to prevent unnecessary GPU cycles
+       - Phase 06-02: Added WebGL resource cleanup in onUnmounted() hook to prevent GPU memory leaks
     - Phase 8 added: Highlighted Cluster Selector — interactive cluster highlighting with slider control
 
 ## Session Continuity
 
-Last session: 2026-02-04
-Stopped at: Completed 06-01 SUMMARY creation, Phase 6 Plan 1 (of 3)
+Last session: 2026-02-03
+Stopped at: Completed 06-02-PLAN.md, Phase 6 Plan 2 (of 3)
 Resume file: None
