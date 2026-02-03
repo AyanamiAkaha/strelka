@@ -18,7 +18,8 @@ Decimal phases appear between their surrounding integers in numeric order.
    - [x] **Phase 4: Data Source Toggle & Error Display** - Enable switching between data sources with error UI
    - [x] **Phase 5: Fix GPU Memory & Loading Issues** - Close critical blockers from milestone audit
    - [ ] **Phase 6: Performance & UX Improvements** - Add rendering guards and cleanup
-  - [ ] **Phase 7: Documentation Cleanup** - Resolve technical debt
+   - [ ] **Phase 7: Documentation Cleanup** - Resolve technical debt
+   - [ ] **Phase 8: Highlighted Cluster Selector** - Add interactive cluster highlighting with slider control
 
 ## Phase Details
 
@@ -174,13 +175,28 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Plans**: 2 plans (in 2 waves)
 
-  - [ ] 07-01-PLAN.md — Add coordinate system JSDoc to Camera.ts
-  - [ ] 07-02-PLAN.md — Resolve or update TODO comments in DataProvider.ts
+   - [ ] 07-01-PLAN.md — Add coordinate system JSDoc to Camera.ts
+   - [ ] 07-02-PLAN.md — Resolve or update TODO comments in DataProvider.ts
+
+### Phase 8: Highlighted Cluster Selector
+
+**Goal**: Add interactive cluster highlighting with slider control
+
+**Depends on**: Phase 7
+
+**Plans**: 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 8 to break down)
+
+**Details**:
+- Use slider with min=-2 (none, trick to account for -1 being potentially valid cluster - noise cluster)
+- max=max cluster number from loaded data
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4 → 5 → 6 → 7
+Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
   | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -190,5 +206,6 @@ Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4 → 5 → 6 → 7
 | |  3. SQLite Data Loader | 3/3 | Complete | 2026-02-03 |
   | 4. Data Source Toggle & Error Display | 3/3 | Complete | 2026-02-03 |
   | 5. Fix GPU Memory & Loading Issues | 4/4 | Complete | 2026-02-03 |
-  | 6. Performance & UX Improvements | 0/3 | Pending | — |
-  | 7. Documentation Cleanup | 0/2 | Pending | — |
+   | 6. Performance & UX Improvements | 0/3 | Pending | — |
+   | 7. Documentation Cleanup | 0/2 | Pending | — |
+   | 8. Highlighted Cluster Selector | 0/0 | Pending | — |
