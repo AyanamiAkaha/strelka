@@ -22,7 +22,7 @@
       <select
         id="table-select"
         v-model="selectedTable"
-        :disabled="isLoading"
+        :disabled="props.isLoading"
       >
         <option v-for="name in availableTables" :key="name" :value="name">
           {{ name }}
@@ -31,7 +31,7 @@
       <button
         class="load-table-btn"
         @click="handleTableChange"
-        :disabled="isLoading || !selectedTable"
+        :disabled="props.isLoading || !selectedTable"
       >
         Load
       </button>
@@ -49,12 +49,12 @@ const emit = defineEmits<{
 }>()
 
 const props = defineProps<{
+  isLoading: boolean
   file: File | null
 }>()
 
 const fileInputRef = ref<HTMLInputElement>()
 const isDragging = ref(false)
-const isLoading = ref(false)
 const availableTables = ref<string[]>([])
 const selectedTable = ref<string>('')
 const currentFile = ref<File | null>(null)
@@ -101,11 +101,9 @@ const processFile = async (file: File) => {
   try {
     if (extension === 'db' || extension === 'sqlite') {
       // SQLite file - load and show table selection
-      isLoading.value = true
       const result = await DataProvider.loadSqliteFile(file)
       availableTables.value = result.tables
       emit('file-selected', file)
-      isLoading.value = false
 
       // If there's only one table, auto-select it
       if (result.tables.length === 1) {
@@ -113,12 +111,9 @@ const processFile = async (file: File) => {
       }
     } else {
       // JSON: emit only file reference, no data loading
-      isLoading.value = true
       emit('file-selected', file)
-      isLoading.value = false
     }
   } catch (error) {
-    isLoading.value = false
     // Emit file-selected event even on error to let parent handle error display
     emit('file-selected', file)
   }
