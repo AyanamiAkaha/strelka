@@ -184,14 +184,15 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Depends on**: Phase 7
 
-**Plans**: 0 plans
+**Plans**: 1 plan (in 1 wave)
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 8 to break down)
+- [ ] 08-01-PLAN.md — Replace radio buttons with dynamic slider and pass pointData to ControlsOverlay
 
 **Details**:
 - Use slider with min=-2 (none, trick to account for -1 being potentially valid cluster - noise cluster)
 - max=max cluster number from loaded data
+- Display labels: -2 → "None", -1 → "Noise", 0+ → "Cluster X"
 
 ## Progress
 
@@ -207,5 +208,5 @@ Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4 → 5 → 6 → 7 �
   | 4. Data Source Toggle & Error Display | 3/3 | Complete | 2026-02-03 |
    | 5. Fix GPU Memory & Loading Issues | 4/4 | Complete | 2026-02-03 |
     | 6. Performance & UX Improvements | 3/3 | Complete | 2026-02-04 |
-   | 7. Documentation Cleanup | 2/2 | Complete | 2026-02-04 |
-   | 8. Highlighted Cluster Selector | 0/0 | Pending | — |
+|   7. Documentation Cleanup | 2/2 | Complete | 2026-02-04 |
+   | 8. Highlighted Cluster Selector | 1/1 | Planned | 2026-02-04 |
