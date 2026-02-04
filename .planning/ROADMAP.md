@@ -2,12 +2,12 @@
 
 ## Overview
 
-WebGL Clusters Playground — 3D point cloud visualization with data loading, camera controls, and cluster highlighting.
+WebGL Clusters Playground — 3D point cloud visualization with data loading, camera controls, cluster highlighting, and point hover with metadata display.
 
 ## Milestones
 
 - ✅ **v1 Data Loading Capabilities** — Phases 1, 1.1, 2-8 (shipped 2026-02-04) — [See full details](./milestones/v1-ROADMAP.md)
-- 📋 **v1.1 UX Refinements** — Phases 9-11 (planned)
+- 🚧 **v1.2 Point Hover with Tag/Image Display** — Phases 9-11 (in progress)
 
 ## Phases
 
@@ -28,209 +28,90 @@ WebGL Clusters Playground — 3D point cloud visualization with data loading, ca
 
 </details>
 
-### 📋 v1.1 UX Refinements (Planned)
+### 🚧 v1.2 Point Hover with Tag/Image Display (In Progress)
 
-- [ ] Phase 9: highlightedCluster Reset Consistency ([N] plans)
-- [ ] Phase 10: SQLite Table Selection UX ([N] plans)
-- [ ] Phase 11: Cluster Slider Disable State ([N] plans)
+**Milestone Goal:** Enable users to hover over points to see associated tags and images via GPU-based detection and screen-space overlay.
+
+- [ ] Phase 9: Data Foundation ([N] plans)
+- [ ] Phase 10: GPU Hover Detection ([N] plans)
+- [ ] Phase 11: Screen Overlay ([N] plans)
 
 ## Phase Details
 
-### Phase 1: Camera Rotation Fix
+<details>
+<summary>✅ v1 Phase Details (Complete)</summary>
 
-**Goal**: Camera rotates correctly on all axes with documented coordinate system conventions
+See `.planning/milestones/v1-ROADMAP.md` for complete v1 phase details.
 
-**Depends on**: Nothing (first phase)
+</details>
 
-**Requirements**: CAM-01, CAM-02
+### Phase 9: Data Foundation
 
-**Success Criteria** (what must be TRUE):
-1. User can rotate camera up/down and left/right in correct direction
-2. Coordinate system is documented in Camera.ts with Y-up convention
-3. Axis sign corrections are implemented in forward vector formula
+**Goal**: System loads and uses optional `tag` and `image` columns from JSON and SQLite data, gracefully handling missing data
 
-**Plans**: 3 plans (in 3 waves)
+**Depends on**: v1.0 (Phase 8)
 
- - [x] 01-camera-rotation-fix-01-PLAN.md — Fix forward vector calculation in Camera.ts and ShaderManager.ts
- - [x] 01-camera-rotation-fix-02-PLAN.md — Create coordinate system documentation
-  - [x] 01-camera-rotation-fix-03-PLAN.md — Verify camera rotation behavior and document symptoms
-### Phase 1.1: Implement Quaternion-Based Camera (INSERTED)
-
-**Goal:** Implement quaternion-based camera rotation to eliminate gimbal lock
-
-**Depends on:** Phase 1
-
-**Requirements**: CAM-03 (from v2 - promoted to v1.1 urgency)
+**Requirements**: DATA-01, DATA-02, DATA-03
 
 **Success Criteria** (what must be TRUE):
-1. User can rotate camera at extreme angles (±90°) without gimbal lock
-2. Camera movement uses local coordinate space (not fixed world up)
-3. Quaternion-based rotation accumulates correctly without drift
-4. Camera reset ('R' key) returns to default position and orientation
+1. User can load JSON data with `tag` column and tags are accessible in the loaded data
+2. User can load JSON data with `image` column and image URLs are accessible in the loaded data
+3. User can load data without tag/image columns and system works without errors or warnings
+4. User can load SQLite data with tag/image columns and columns are accessible in loaded data
 
-**Plans**: 5 plans (in 4 waves)
+**Plans**: TBD
 
-- [x] 01.1-01-PLAN.md — Add gl-matrix dependency and export vec3/quat from Math.ts
-- [x] 01.1-02-PLAN.md — Replace Camera.ts Vec3 with gl-matrix vec3
-- [x] 01.1-03-PLAN.md — Implement quaternion-based rotation in Camera.ts
-- [x] 01.1-04-PLAN.md — Update shader integration for quaternion camera
-- [x] 01.1-05-PLAN.md — Verify quaternion camera eliminates gimbal lock
+### Phase 10: GPU Hover Detection
 
-### Phase 2: JSON Data Loader
+**Goal**: GPU-based distance threshold detection identifies the nearest point to the cursor with adaptive threshold calculated in JavaScript
 
-**Goal**: Users can load point data from JSON files with cluster IDs
+**Depends on**: Phase 9
 
-**Depends on**: Phase 1
-
-**Requirements**: JSON-01, JSON-02
+**Requirements**: HOVER-01, HOVER-02
 
 **Success Criteria** (what must be TRUE):
-1. User can select .json file via file picker dialog
-2. System parses JSON and converts to Float32Array for WebGL upload
-3. System displays error message when JSON is invalid or malformed
+1. User can move cursor over point cloud and the nearest point is detected and identified
+2. System maintains 30+ FPS when hovering over 5M points (acceptable per user clarification)
+3. Hover detection threshold adapts to zoom level (larger when zoomed out, smaller when zoomed in)
+4. Threshold is calculated in JavaScript/TypeScript and passed to shader (not recalculated in shader)
 
-**Plans**: 3 plans (in 3 waves)
+**Plans**: TBD
 
-- [x] 02-01-PLAN.md — Create JSON types and validation logic
-- [x] 02-02-PLAN.md — Add loadFromFile() method to DataProvider
- - [x] 02-03-PLAN.md — Create DataLoadControl and integrate error panel
- 
-### Phase 3: SQLite Data Loader
+### Phase 11: Screen Overlay
 
-**Goal**: Users can load point data from SQLite databases
+**Goal**: Vue overlay displays point metadata (tag, image) at screen position when hovering, with optional edge clamping
 
-**Depends on**: Phase 2
+**Depends on**: Phase 10
 
-**Requirements**: SQL-01, SQL-02, SQL-03
+**Requirements**: OVERLAY-01, OVERLAY-02 (Could have)
 
 **Success Criteria** (what must be TRUE):
-1. System loads .db/.sqlite files using sql.js WebAssembly library
-2. System queries flat table with x, y, z, cluster columns
-3. System displays error message when database is corrupt or unreadable
+1. User can see tag displayed in screen-space overlay when hovering over a point with tag data
+2. User can see image displayed in screen-space overlay when hovering over a point with image URL
+3. Overlay positions near the hovered point without covering the point itself
+4. User can hover over points without tag/image data and system works normally (no overlay)
+5. (Optional) Overlay clamps to viewport edges to avoid clipping when point is near screen edge
 
-**Plans**: 3 plans (in 3 waves)
-
-  - [x] 03-01-PLAN.md — Install sql.js and create initialization utility with schema validation
-  - [x] 03-02-PLAN.md — Implement SQLite file loading with table selection and data extraction
-   - [x] 03-03-PLAN.md — Integrate SQLite UI, add granular error handling, and loading state
-
-### Phase 4: Data Source Toggle & Error Display
-
-**Goal**: Users can toggle between generated data and loaded data sources, with unified error display for loading failures
-
-**Depends on**: Phase 3
-
-**Requirements**: UI-01, UI-02
-
-**Success Criteria** (what must be TRUE):
-1. User can toggle between Generate and Load data sources via buttons
-2. Camera resets to default position when switching data sources
-3. Errors from loading operations appear in collapsible error panel
-4. Errors auto-dismiss when new data loads successfully
-
-**Plans**: 3 plans (in 2 waves)
-
-  - [x] 04-01-PLAN.md — Add data source toggle UI and state management
-  - [x] 04-02-PLAN.md — Implement error display system with collapsible panel
-  - [x] 04-03-PLAN.md — Integrate switching with error handling and verify workflow
-
-### Phase 5: Fix GPU Memory & Loading Issues
-
-**Goal**: Fix critical integration issues blocking milestone completion
-
-**Depends on**: Phase 4
-
-**Requirements**: Gap closure from milestone audit
-
-**Success Criteria** (what must be TRUE):
-1. setupBuffers() deletes old buffers before creating new ones
-2. JSON files are loaded only once (no duplicate parsing)
-3. SQLite files do not create empty buffers before table selection
-4. Syntax error in DataProvider.ts is fixed
-
-**Plans**: 4 plans (in 1 wave)
-
-  - [x] 05-01-PLAN.md — Add buffer cleanup to setupBuffers()
-  - [x] 05-02-PLAN.md — Remove duplicate JSON loading in DataLoadControl
-  - [x] 05-03-PLAN.md — Prevent empty SQLite buffer creation
-  - [x] 05-04-PLAN.md — Fix syntax error in DataProvider.ts
-
-### Phase 6: Performance & UX Improvements
-
-**Goal**: Add performance optimizations and UX consistency fixes
-
-**Depends on**: Phase 5
-
-**Requirements**: Gap closure from milestone audit
-
-**Success Criteria** (what must be TRUE):
-1. Render loop checks pointCount > 0 before drawArrays()
-2. WebGL resources cleaned up on component unmount
-3. Loading state is unified between DataLoadControl and WebGLPlayground
-
-**Plans**: 3 plans (in 2 waves)
-
-  - [x] 06-01-PLAN.md — Add pointCount guard to render loop
-  - [x] 06-02-PLAN.md — Add WebGL cleanup to onUnmounted()
-  - [x] 06-03-PLAN.md — Unify loading state across components
-
-### Phase 7: Documentation Cleanup
-
-**Goal**: Resolve technical debt and complete documentation requirements
-
-**Depends on**: Phase 6
-
-**Requirements**: Gap closure from milestone audit
-
-**Success Criteria** (what must be TRUE):
-1. Camera.ts has JSDoc referencing coordinate system documentation
-2. TODO comments in DataProvider.ts are resolved or updated
-
-**Plans**: 2 plans (in 2 waves)
-
-   - [x] 07-01-PLAN.md — Add comprehensive JSDoc to Camera.ts and resolve DataProvider TODO
-   - [x] 07-02-PLAN.md — Add @see cross-references from camera consumers to Camera.ts
-
-### Phase 8: Highlighted Cluster Selector
-
-**Goal**: Add interactive cluster highlighting with slider control
-
-**Depends on**: Phase 7
-
-**Success Criteria** (what must be TRUE):
-1. User can select clusters to highlight using a slider control (not radio buttons)
-2. Slider range dynamically adapts to loaded data (max = highest cluster ID)
-3. Selected cluster is highlighted in orange when rendered
-4. Special values display correctly: -2 → "None", -1 → "Noise", 0+ → "Cluster X"
-5. Slider works seamlessly with both generated and loaded data
-6. WebGL uniform updates automatically via existing render loop (no shader changes)
-
-**Plans**: 1 plan (in 1 wave)
-
- Plans:
- - [x] 08-01-PLAN.md — Replace radio buttons with dynamic slider and pass pointData to ControlsOverlay
-
-**Details**:
-- Use slider with min=-2 (none, trick to account for -1 being potentially valid cluster - noise cluster)
-- max=max cluster number from loaded data
-- Display labels: -2 → "None", -1 → "Noise", 0+ → "Cluster X"
+**Plans**: TBD
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9-11
+Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11
 
-  | Phase | Milestone | Plans Complete | Status | Completed |
-|-------|-----------|---------------|--------|-----------|
-| | 1. Camera Rotation Fix | v1 | 3/3 | Complete | 2026-02-02 |
-| | 1.1. Implement Quaternion-Based Camera | v1 | 5/5 | Complete | 2026-02-02 |
-| | 2. JSON Data Loader | v1 | 3/3 | Complete | 2026-02-02 |
-| | 3. SQLite Data Loader | v1 | 3/3 | Complete | 2026-02-03 |
-  | 4. Data Source Toggle & Error Display | v1 | 3/3 | Complete | 2026-02-03 |
-    | 5. Fix GPU Memory & Loading Issues | v1 | 4/4 | Complete | 2026-02-03 |
-     | 6. Performance & UX Improvements | v1 | 3/3 | Complete | 2026-02-04 |
- |   7. Documentation Cleanup | v1 | 2/2 | Complete | 2026-02-04 |
-    | 8. Highlighted Cluster Selector | v1 | 1/1 | Complete | 2026-02-04 |
-| | 9. highlightedCluster Reset Consistency | v1.1 | 0/3 | Not started | - |
-| | 10. SQLite Table Selection UX | v1.1 | 0/2 | Not started | - |
-| | 11. Cluster Slider Disable State | v1.1 | 0/1 | Not started | - |
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 1. Camera Rotation Fix | v1 | 3/3 | Complete | 2026-02-02 |
+| 1.1. Quaternion-Based Camera | v1 | 5/5 | Complete | 2026-02-02 |
+| 2. JSON Data Loader | v1 | 3/3 | Complete | 2026-02-02 |
+| 3. SQLite Data Loader | v1 | 3/3 | Complete | 2026-02-03 |
+| 4. Data Source Toggle & Error Display | v1 | 3/3 | Complete | 2026-02-03 |
+| 5. Fix GPU Memory & Loading Issues | v1 | 4/4 | Complete | 2026-02-03 |
+| 6. Performance & UX Improvements | v1 | 3/3 | Complete | 2026-02-04 |
+| 7. Documentation Cleanup | v1 | 2/2 | Complete | 2026-02-04 |
+| 8. Highlighted Cluster Selector | v1 | 1/1 | Complete | 2026-02-04 |
+| 9. Data Foundation | v1.2 | 0/0 | Not started | - |
+| 10. GPU Hover Detection | v1.2 | 0/0 | Not started | - |
+| 11. Screen Overlay | v1.2 | 0/0 | Not started | - |
+
+**Milestone Progress:** v1 ✅ Complete | v1.2 🚧 Phase 9 ready to plan

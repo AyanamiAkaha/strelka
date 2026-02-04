@@ -64,13 +64,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| HOVER-01 | Phase 1 | Pending |
-| HOVER-02 | Phase 1 | Pending |
-| OVERLAY-01 | Phase 2 | Pending |
-| OVERLAY-02 | Phase 2 | Pending |
-| DATA-01 | Phase 3 | Pending |
-| DATA-02 | Phase 3 | Pending |
-| DATA-03 | Phase 3 | Pending |
+| HOVER-01 | Phase 10 | Pending |
+| HOVER-02 | Phase 10 | Pending |
+| OVERLAY-01 | Phase 11 | Pending |
+| OVERLAY-02 | Phase 11 (Could have) | Pending |
+| DATA-01 | Phase 9 | Pending |
+| DATA-02 | Phase 9 | Pending |
+| DATA-03 | Phase 9 | Pending |
 
 **Coverage:**
 - v1.2 requirements: 7 total
@@ -79,4 +79,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-04*
-*Last updated: 2026-02-04 after research synthesis*
+*Last updated: 2026-02-04 after roadmap creation*
