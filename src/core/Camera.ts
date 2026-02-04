@@ -1,5 +1,23 @@
 import { vec3, quat, mat4 } from './Math'
 
+/**
+ * Quaternion-based camera for 3D WebGL rendering.
+ *
+ * Uses gl-matrix quaternions for orientation to eliminate gimbal lock at extreme angles.
+ * Movement is in local camera space (forward, right, up vectors derived from orientation),
+ * not fixed world up vector.
+ *
+ * Coordinate system: Y-up, right-handed WebGL conventions.
+ * - Y-axis points up
+ * - Positive Z points out of screen (toward viewer)
+ * - Positive X points right
+ *
+ * Implementation references:
+ * - Phase 1: Euler rotation fix (CAM-01, CAM-02)
+ * - Phase 1.1: Quaternion migration (CAM-03)
+ *
+ * @see https://glmatrix.net/docs/ for gl-matrix library
+ */
 export interface CameraControls {
   forward: boolean
   backward: boolean
