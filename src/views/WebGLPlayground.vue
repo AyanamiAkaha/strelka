@@ -430,7 +430,38 @@ const startRenderLoop = () => {
           gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_far'), uniforms.u_far)
           gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_pointSize'), 10.0)
           gl.uniform1f(gl.getUniformLocation(shaderProgram, 'u_hilighted_cluster'), highlightedCluster.value)
-          
+
+          // Update hover detection uniforms
+          if (hoverThresholds.value && camera.value) {
+            const canvas = canvasRef.value.canvasElement
+            if (canvas) {
+              // Convert mouse position to world space
+              const worldPos = camera.value.convertMouseToWorld(
+                lastMouseX.value,
+                lastMouseY.value,
+                canvas.width,
+                canvas.height
+              )
+
+              // Pass cursor world position to shader
+              gl.uniform2f(
+                gl.getUniformLocation(shaderProgram, 'u_cursorWorldPos'),
+                worldPos.x,
+                worldPos.y
+              )
+
+              // Pass distance thresholds to shader
+              gl.uniform1f(
+                gl.getUniformLocation(shaderProgram, 'u_cameraDistThreshold'),
+                hoverThresholds.value.cameraDistThreshold
+              )
+              gl.uniform1f(
+                gl.getUniformLocation(shaderProgram, 'u_cursorDistThreshold'),
+                hoverThresholds.value.cursorDistThreshold
+              )
+            }
+          }
+
           // Bind position buffer
           gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
           const positionLocation = gl.getAttribLocation(shaderProgram, 'a_position')
