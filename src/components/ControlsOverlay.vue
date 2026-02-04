@@ -41,20 +41,22 @@
     </div>
     <div class="settings">
       <h4>Generation Settings</h4>
-      <div class="hl-cluster">
+      <div class="cluster-selector">
         <h5>Highlighted cluster</h5>
-        <input id="hlc-none" type="radio" :value="-1" v-model="highlightedCluster" />
-        <label for="hlc-none">None</label>
-        <input id="hlc-0" type="radio" :value="0" v-model="highlightedCluster" />
-        <label for="hlc-0">0</label>
-        <input id="hlc-1" type="radio" :value="1" v-model="highlightedCluster" />
-        <label for="hlc-1">1</label>
-        <input id="hlc-2" type="radio" :value="2" v-model="highlightedCluster" />
-        <label for="hlc-2">2</label>
-        <input id="hlc-3" type="radio" :value="3" v-model="highlightedCluster" />
-        <label for="hlc-3">3</label>
-        <input id="hlc-4" type="radio" :value="4" v-model="highlightedCluster" />
-        <label for="hlc-4">4</label>
+        <div class="slider-wrapper">
+          <input
+            id="cluster-slider"
+            type="range"
+            v-model.number="highlightedCluster"
+            :min="-2"
+            :max="maxClusterId"
+            step="1"
+            aria-label="Select cluster to highlight"
+          />
+        </div>
+        <div class="cluster-display" :data-value="clusterDisplayValue">
+          {{ clusterDisplayValue }}
+        </div>
       </div>
       <div>
         <h5>Points per cluster</h5>
@@ -197,5 +199,58 @@ const clusterDisplayValue = computed(() => {
 .data-source-btn.active {
   background: rgba(76, 175, 80, 0.3);
   color: #69F0AE;
+}
+
+.hl-cluster {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.cluster-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.cluster-selector h5 {
+  margin: 0 0 6px 0;
+  color: #4CAF50;
+  font-size: 11px;
+  font-family: monospace;
+}
+
+.slider-wrapper {
+  width: 100%;
+}
+
+.cluster-selector input[type="range"] {
+  width: 100%;
+  cursor: pointer;
+  accent-color: #4CAF50;  /* Modern browser styling */
+}
+
+.cluster-display {
+  color: white;
+  font-size: 11px;
+  font-family: monospace;
+  text-align: center;
+  padding: 4px 8px;
+  background: rgba(76, 175, 80, 0.1);
+  border-radius: 4px;
+}
+
+/* Optional: Color code special values */
+.cluster-display[data-value="None"] {
+  color: #9e9e9e;  /* Gray for None */
+}
+.cluster-display[data-value="Noise"] {
+  color: #f44336;  /* Red for Noise */
+}
+.cluster-display[data-value^="Cluster"] {
+  color: #4CAF50;  /* Green for clusters */
 }
 </style>
