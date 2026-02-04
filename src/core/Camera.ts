@@ -30,19 +30,28 @@ export interface CameraControls {
 
 export class Camera {
   // Camera state
+  /** Camera position in world space */
   public position: vec3
   private orientation: quat
+  /** Distance from look target */
   public distance: number
   
   // Camera settings
+  /** Base movement speed */
   public moveSpeed: number = 5.0
+  /** Multiplier when shift is held */
   public fastMoveMultiplier: number = 3.0
+  /** Mouse rotation sensitivity */
   public mouseSensitivity: number = 0.0014  // Reduced from 0.002 to match original speed (~30% slower)
+  /** Mouse wheel zoom speed */
   public zoomSpeed: number = 0.1
   
   // Projection settings
+  /** Vertical field of view in degrees */
   public fov: number = 45
+  /** Near clipping plane distance */
   public near: number = 0.1
+  /** Far clipping plane distance */
   public far: number = 100.0
   
   // Control state
@@ -65,6 +74,9 @@ export class Camera {
 
   /**
    * Convert quaternion to Euler angles for debug display only
+   *
+   * @param q - Quaternion orientation
+   * @returns Object with x (pitch) and y (yaw) angles in radians
    */
   private quatToEuler(q: quat): { x: number, y: number } {
     // Extract Euler angles from quaternion for display only
@@ -74,6 +86,11 @@ export class Camera {
     return { x: pitch, y: yaw }
   }
 
+  /**
+   * Get debug information for camera state display
+   *
+   * @returns Debug info object with position (x, y, z), rotation (x, y), distance
+   */
   public toDebugInfo(): { position: { x: number; y: number; z: number }; rotation: { x: number; y: number }; distance: number } {
     return {
       position: { x: this.position[0], y: this.position[1], z: this.position[2] },
@@ -84,6 +101,10 @@ export class Camera {
 
   /**
    * Handle keyboard input
+   *
+   * @param key - Keyboard key code
+   * @param pressed - Whether key is pressed (true) or released (false)
+   * @returns void
    */
   handleKeyEvent(key: string, pressed: boolean): void {
     switch (key.toLowerCase()) {
@@ -116,6 +137,10 @@ export class Camera {
 
   /**
    * Handle mouse movement for looking around
+   *
+   * @param deltaX - Horizontal mouse movement in pixels
+   * @param deltaY - Vertical mouse movement in pixels
+   * @returns void
    */
   handleMouseMove(deltaX: number, deltaY: number): void {
     const pitchChange = -deltaY * this.mouseSensitivity   // Negate to fix inverted vertical
@@ -134,6 +159,9 @@ export class Camera {
 
   /**
    * Handle mouse wheel for zooming
+   *
+   * @param delta - Mouse wheel scroll delta (positive = zoom in, negative = zoom out)
+   * @returns void
    */
   handleMouseWheel(delta: number): void {
     this.distance += delta * this.zoomSpeed
@@ -142,6 +170,9 @@ export class Camera {
 
   /**
    * Update camera position based on input (call every frame)
+   *
+   * @param deltaTime - Time since last frame in seconds (default: 1/60)
+   * @returns void
    */
   update(deltaTime: number = 1/60): void {
     const speed = this.moveSpeed * deltaTime * (this.controls.fast ? this.fastMoveMultiplier : 1)
@@ -176,6 +207,8 @@ export class Camera {
 
   /**
    * Reset camera to default position
+   *
+   * @returns void
    */
   reset(): void {
     vec3.set(this.position, 0, 0, 10)
@@ -186,6 +219,9 @@ export class Camera {
   /**
    * Get camera parameters for shader uniforms
    * Computes view matrix from quaternion to eliminate gimbal lock in shader
+   *
+   * @param aspect - Canvas aspect ratio (width / height)
+   * @returns Object with shader uniforms: { u_cameraPosition, u_viewMatrix, u_mvpMatrix, u_fov, u_near, u_far, u_aspect }
    */
   getShaderUniforms(aspect: number) {
     // Get local camera axes from quaternion (these are camera's local space)
@@ -224,6 +260,8 @@ export class Camera {
 
   /**
    * Get camera forward direction
+   *
+   * @returns Forward direction vector in world space
    */
   getForward(): vec3 {
     const forward = vec3.create()
@@ -233,6 +271,8 @@ export class Camera {
 
   /**
    * Get camera right direction
+   *
+   * @returns Right direction vector in world space
    */
   getRight(): vec3 {
     const right = vec3.create()
@@ -242,6 +282,8 @@ export class Camera {
 
   /**
    * Get camera up direction
+   *
+   * @returns Up direction vector in world space
    */
   getUp(): vec3 {
     const up = vec3.create()
