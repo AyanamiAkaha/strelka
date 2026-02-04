@@ -1,177 +1,186 @@
 # Project Research Summary
 
-**Project:** WebGL Clusters Playground — Vue 3 UX Refinements (v1.1)
-**Domain:** Vue 3 + WebGL Application — UX Refinement
+**Project:** WebGL Clusters Playground — v1.2 Point Hover with Tag/Image Display
+**Domain:** WebGL Point Cloud Visualization + Vue 3 UI
 **Researched:** February 4, 2026
 **Confidence:** HIGH
 
 ## Executive Summary
 
-This project is a Vue 3 + WebGL playground for visualizing 3D cluster data. The existing application uses standard Vue 3 Composition API patterns (composables, refs, computed) for state management and Pure WebGL 2.0 for rendering. Research shows that the current architecture is sound but has UX inconsistencies around state reset values, auto-selection behavior, disabled control states, and error recovery guidance.
+Point hover with tag/image display is a table-stakes feature for WebGL point cloud visualization tools that requires GPU-based picking to maintain performance at scale (30M points @ 45 FPS). The recommended approach uses **GPU-side distance detection with 2D buffer communication**, avoiding CPU-based raycasting which is prohibitively expensive (O(N) complexity would cause 100-500ms latency per frame). The solution integrates cleanly into the existing Vue 3 + pure WebGL architecture using transform feedback or color-based picking, with no additional npm packages required beyond the existing stack (gl-matrix, Vue 3 Composition API, TypeScript).
 
-The recommended approach is to refine the UX without introducing new dependencies. Use existing Vue 3 built-in patterns: composables for shared state, computed properties for derived state, watchers for reactive side effects, and props/events for parent-child communication. Key risks include inconsistent reset sentinel values (-2 vs -1 for highlighted cluster), auto-selection without user feedback, ambiguous disabled states, and generic error messages. Mitigation strategies include centralized state management, visual feedback for automatic actions, clear disabled state styling with aria-disabled attributes, and context-aware error guidance with actionable recovery steps.
-
-The research indicates that these changes are low-risk, independent improvements that can be implemented incrementally. Most patterns are well-documented in Vue 3 official documentation, and the existing codebase provides clear integration points. The suggested phase structure prioritizes state consistency first (to establish a foundation), followed by UI polish and enhanced error handling.
+The architecture introduces minimal additions: a new `HoverOverlay.vue` component (sibling to existing controls), extended data loading to support optional tag/image columns, and a hover detection shader variant. The implementation follows established WebGL patterns for large-scale point interaction while maintaining the existing component hierarchy and data flow patterns. Key risks involve performance degradation from synchronous readPixels calls, incomplete state resets in reactive systems, and overlay positioning edge cases at viewport boundaries—all mitigated through specific patterns documented in the research.
 
 ## Key Findings
 
 ### Recommended Stack
 
-No new dependencies needed. The existing stack (Vue 3.3.8, TypeScript 5.3.0, Vite 5.0.0) is sufficient for all UX refinements. Use built-in Vue 3 patterns:
+The research confirms the existing stack (Vue 3.3.8, TypeScript 5.3.0, Pure WebGL, gl-matrix 3.4.4) is sufficient—no new packages are required. The solution relies on **GPU-side picking with transform feedback** for performance, a **2-element Float32Array buffer** for GPU-CPU communication (stores point index + depth), and **gl-matrix projection** for 3D-to-2D screen space positioning. This approach maintains 45 FPS at 30M points with <1% frame budget overhead.
 
-- **Vue Composables** — Encapsulated stateful logic for error handling and form state reuse
-- **Computed Properties** — Derived reactive values for dynamic disable states and validation
-- **Watchers** — React to state changes for auto-selection triggers and error recovery actions
-- **Refs** — Reactive primitives for default state values and shared state across components
-
-Avoid: Pinia (overkill for 2-3 components), VueUse (unnecessary for simple patterns), global error handlers (too coarse-grained).
+**Core technologies:**
+- **Pure WebGL 1.0/2.0** — Core rendering; transform feedback (WebGL 2) preferred for GPU-based picking, color-coded picking (WebGL 1) as fallback
+- **gl-matrix 3.4.4** — Matrix math for 3D→2D projection; `vec3.transformMat4()` converts world position to screen coordinates
+- **Vue 3 Composition API** — Reactive state management via composables (`hoveredPointIndex`, `hoveredPointData` refs)
+- **2D picking shader** — Custom vertex shader calculates distance from mouse position, writes closest point index+depth to buffer
 
 ### Expected Features
 
+Users expect immediate visual feedback when hovering over points, with contextual metadata displayed as screen-space overlays. Research distinguishes between table stakes (missing features feel broken), differentiators (competitive advantage), and anti-features (commonly requested but problematic).
+
 **Must have (table stakes):**
-- **Consistent state reset values** — Users expect "None" to mean no selection, with clear distinction from special values like "Noise"
-- **Auto-selection for single options** — When only one table exists, requiring manual selection feels inefficient
-- **Disabled states for unavailable controls** — Slider for cluster highlighting should be visually disabled when no data is loaded
-- **Clear error messages with context** — Generic errors don't tell users what's wrong or how to fix
-- **Error recovery guidance** — After an error, users expect next steps (retry, change file, fix format)
-- **Accessible disabled state styling** — Disabled controls must be perceivable by screen readers and colorblind users
+- **GPU-based hover detection with distance threshold** — Users expect interaction feedback within 16ms even at 30M points; CPU approaches fail
+- **Tag/image display on hover** — Metadata (tags, images) should appear when available; silent skip if missing
+- **Screen space overlay positioning** — UI overlays follow hovered point in 2D canvas coordinates with edge clamping
+- **Graceful data handling** — No errors when tag/image columns are missing; degrade to hover-only behavior
+- **Click-to-lock functionality** — Toggle persistent overlay display; standard pattern for point inspection
 
 **Should have (competitive):**
-- **Smart default state management** — Intelligently reset to "None" (-2) when switching data sources
-- **Context-aware error suggestions** — Analyze error type and provide specific recovery paths
-- **Visual feedback for auto-selection** — Brief animation or tooltip when auto-selecting single table
-- **Progressive disclosure for advanced controls** — Hide complex controls behind "Advanced" toggle
+- **Depth-based point selection** — Select nearest point when multiple overlap; handles density variations
+- **Adaptive hover threshold** — Adjust distance based on zoom level; consistent interaction feel at all scales
+- **Smart overlay edge clipping** — Anchor to viewport edges; avoid off-screen overlay
 
 **Defer (v2+):**
-- **Data preview before load** — Show row count and column names before parsing full file
-- **Auto-detect data format** — Try JSON, SQLite, CSV based on file content
-- **Error reporting integration** — Allow users to submit error reports with anonymized data
+- **Multi-point selection** (Shift+drag) — Product-market fit first
+- **Hover comparison** (two-point diff) — Complex, needs validation
+- **Keyboard navigation** (Tab/arrows) — Accessibility important but not blocking
 
 ### Architecture Approach
 
-The application follows a parent-child component hierarchy with shared global state via composables. WebGLPlayground.vue (parent) manages WebGL context, camera, rendering, and error state. ControlsOverlay.vue (child) handles settings UI and cluster slider. DataLoadControl.vue (grandchild) manages file selection and SQLite table selection. Global shared state (highlightedCluster, ppc) lives in composables/settings.ts as reactive refs imported directly by components. State mutations use props-down, events-up pattern: parent owns state, children emit events to request changes.
+Point hover integrates into the existing architecture via **buffer-based communication** between WebGL and JavaScript, with a **new sibling component** for overlay display. Data flow: WebGLCanvas emits mouse position → WebGLPlayground runs hover detection pass → GPU writes `[index, depth]` to buffer → JavaScript reads and updates reactive refs → HoverOverlay displays tag/image at calculated screen position. The pattern maintains the parent-child hierarchy (WebGLPlayground as parent) and adds a sibling component (HoverOverlay) with global composable state (`hoveredPointIndex`, `hoveredPointData`).
 
 **Major components:**
-1. **WebGLPlayground.vue** — WebGL context, camera controls, point data management, error management (errors array)
-2. **ControlsOverlay.vue** — Settings UI, cluster slider, data source switching, emits file/table selection events
-3. **DataLoadControl.vue** — File selection, SQLite table selection UI, handles auto-selection for single tables
-4. **settings.ts** — Global shared state composable (highlightedCluster ref, ppc ref)
-5. **DataProvider/validators** — Data loading, validation, error generation with context
+1. **WebGLPlayground.vue** — Manages WebGL context, camera, buffers, hover detection rendering pass; coordinates data flow
+2. **HoverOverlay.vue (NEW)** — Displays tag/image at screen position; consumes `hoveredPointData` ref and `screenPosition` prop
+3. **ShaderManager.ts** — Provides hover detection shader variant (distance threshold + transform feedback or color-based picking)
+4. **DataProvider.ts** — Extended to load optional `tag` and `image` columns; returns `null` arrays if missing
+5. **Camera.ts** — Adds `projectPointToScreen()` method for 3D→2D projection using existing gl-matrix utilities
+6. **settings.ts** — Global composable with `hoveredPointIndex` and `hoveredPointData` refs (pattern matches existing `highlightedCluster`)
 
 ### Critical Pitfalls
 
-1. **Inconsistent state reset values** — Changing sentinel values (-2 vs -1) without updating all reset points causes partial state updates and rendering inconsistencies. Audit all reset codepaths and use a centralized reset function.
+Research identifies performance pitfalls from WebGL best practices and Vue 3 anti-patterns, plus general UX considerations for reactive applications.
 
-2. **Auto-selection without user feedback** — Users don't know what happened when the system auto-selects single tables, leading to trust issues. Always add visual feedback (toast message, tooltip) explaining the automatic action.
+1. **CPU-based raycasting for 30M points** — O(N) distance checks (600M operations/frame) cause 100-500ms latency; unacceptable at 45 FPS target. **Avoid:** Use GPU-side picking in shader (transform feedback or color-based), parallel processing via vertex shader.
 
-3. **Dynamic disabling without clear visual indicators** — Disabling controls without opacity changes, cursor changes, or aria-disabled attributes creates a "frozen UI" perception. Use high-contrast styling with forced-colors fallback for accessibility.
+2. **Blocking `gl.readPixels()` every frame** — Synchronous read causes CPU-GPU pipeline stall (1-5ms per call); destroys performance. **Avoid:** Use transform feedback (WebGL 2) or throttle readPixels to hover events only, not every frame.
 
-4. **Generic error messages without actionability** — Errors like "Failed to load" don't help users diagnose or recover. Use context-aware messages with specific guidance (e.g., "File too large. Try exporting with fewer rows.") and aria-errormessage linking to inputs.
+3. **Incomplete state resets in reactive system** — Sentinel value mismatches (-1 vs -2 for `highlightedCluster`) cause inconsistent state across components. **Avoid:** Centralized reset function, audit all reset codepaths, consistent sentinel values.
 
-5. **Mutation of props in child components** — Direct prop mutation breaks one-way data flow and causes Vue warnings. Always emit events to request state changes from the parent.
+4. **Overlay covers hovered point** — Direct mouse positioning obscures the point the user is inspecting. **Avoid:** Offset overlay 20px in screen space (`translate(-50%, -120%)`), use edge-clamping to stay within viewport.
+
+5. **Auto-selection without user feedback** — Silent table selection or cluster changes confuse users. **Avoid:** Provide loading indicators, visual feedback on selection, opt-out capability for auto-select.
+
+6. **Dynamic disabling without visual indicators** — Controls silently disabled feel like frozen/broken UI. **Avoid:** Clear disabled state (opacity, tooltips, "disabled" class with reason label).
+
+**Note:** Pitfalls #3, #5, and #6 are from PITFALLS.md which covers broader Vue 3 UX patterns beyond hover feature. While less directly applicable, they provide useful general guidance for state management and UI feedback patterns.
 
 ## Implications for Roadmap
 
-Based on research, suggested phase structure:
+Based on research, the suggested phase structure prioritizes the data foundation first, then GPU infrastructure, then UI overlay. This order avoids blocking on missing data, ensures performance from the start, and allows incremental testing.
 
-### Phase 1: State Reset Consistency
-**Rationale:** Establish a consistent foundation before adding features. Changing sentinel values (-2 to -1) requires updates across multiple files (settings.ts, WebGLPlayground.vue, ControlsOverlay.vue). This is the lowest-risk change and clarifies semantic meaning of state values.
-**Delivers:** Consistent highlightedCluster reset to -1 ("All clusters") across all data source switches
-**Addresses:** Consistent state reset values (table stake)
-**Avoids:** Partial state updates causing rendering inconsistencies (pitfall #1)
-**Uses:** Vue refs and computed properties (stack)
+### Phase 1: Data Foundation — Tag/Image Column Support
+**Rationale:** Data loading changes are prerequisites for all hover features; extending types and DataProvider is independent of GPU/UI work and can be validated immediately.
+**Delivers:** `PointData` interface extended with optional `tags` and `images` arrays, DataProvider loads these columns from JSON/SQLite (null if missing), validation for tag (string) and image (URL) types.
+**Addresses:** Graceful data handling (FEATURES P1), optional data schema support (differentiator)
+**Avoids:** Runtime errors when accessing missing columns, incomplete state updates in reactive system
 
-### Phase 2: Dynamic Control Disabling
-**Rationale:** Prevent confusing interaction patterns. This is independent of state reset changes and requires minimal code changes. Adding disabled states to the cluster slider when no data is loaded prevents user frustration from "sliding with no effect."
-**Delivers:** Cluster slider disabled when pointData is null, with visual feedback (opacity, cursor) and aria-disabled attribute
-**Addresses:** Disabled states for unavailable controls, accessible disabled state styling (table stakes)
-**Avoids:** "Frozen UI" perception from silent disabling (pitfall #3)
-**Uses:** Computed properties for derived state, Vue attribute binding (stack)
+### Phase 2: GPU Infrastructure — Point Index Buffer & Hover Shader
+**Rationale:** GPU-based detection is the core performance enabler; must be in place before UI integration. Shader complexity is the highest technical risk, so tackle it early.
+**Delivers:** Point index buffer (`[0, 1, 2, ..., N-1]`), hover detection shader variant (distance threshold + transform feedback), hover output buffer (`[index, depth]`), `ShaderManager.getHoverDetectionShaders()` method.
+**Uses:** Pure WebGL transform feedback (WebGL 2 preferred), gl-matrix for mouse position calculations
+**Implements:** GPU-based hover detection (FEATURES P1), depth-based point selection (differentiator)
+**Avoids:** CPU-based raycasting pitfall, performance degradation at 30M points
 
-### Phase 3: SQLite Auto-Selection with Feedback
-**Rationale:** Improve UX for single-table databases. Auto-selecting single tables eliminates unnecessary user action. Requires adding visual feedback to avoid confusion about what happened.
-**Delivers:** Auto-select and load single-table SQLite files, hide table selection UI for single tables, show toast message confirming auto-selection
-**Addresses:** Auto-selection for single options, visual feedback for auto-selection (table stakes + differentiator)
-**Avoids:** Silent auto-selection confusion (pitfall #2)
-**Uses:** Vue watchers or computed logic, conditional rendering (stack)
+### Phase 3: Camera Integration — 3D to 2D Projection
+**Rationale:** Overlay positioning requires accurate screen coordinates; depends on existing camera matrices but is independent of hover detection logic.
+**Delivers:** `Camera.projectPointToScreen()` method, screen space coordinate conversion (NDC [-1,1] → canvas pixels), edge clamping logic to keep overlay within viewport.
+**Uses:** gl-matrix `vec3.transformMat4()` and matrix operations
+**Implements:** Screen space overlay positioning (FEATURES P1), smart overlay edge clipping (differentiator)
+**Avoids:** Off-screen overlay pitfall, coordinate system confusion
 
-### Phase 4: Error Recovery Guidance
-**Rationale:** Most complex change, requires updates across error system (ErrorInfo interface, validators, error panel UI). Completes the UX polish by making errors actionable.
-**Delivers:** Context-aware error messages with recovery guidance, error panel displays guidance with actionable steps, aria-errormessage linking errors to inputs
-**Addresses:** Clear error messages with context, error recovery guidance (table stakes + differentiator)
-**Avoids:** Generic error messages without actionability (pitfall #4)
-**Uses:** Vue error state management, composable pattern for error handling (stack)
+### Phase 4: Mouse Tracking & State Management
+**Rationale:** Reactive state coordination is needed before UI component; separate from GPU work to test state flow independently.
+**Delivers:** WebGLCanvas emits `@hover-update` with mouse coordinates, WebGLPlayground tracks mouse position and reads hover buffer, settings.ts exports `hoveredPointIndex` and `hoveredPointData` refs.
+**Uses:** Vue 3 Composition API refs and reactivity
+**Implements:** Hover state communication architecture, global state pattern matching existing `highlightedCluster`
+**Avoids:** Incomplete state resets, inconsistent reactivity across components
+
+### Phase 5: UI Overlay Component — Tag/Image Display
+**Rationale:** Final integration of all pieces; overlay depends on state, projection, and data foundation.
+**Delivers:** HoverOverlay.vue component, absolute positioning with screen prop, conditional tag/image rendering, CSS styling (max-width, max-height, pointer-events: none).
+**Uses:** Vue 3 props, conditional rendering, CSS transforms
+**Implements:** Tag/image display (FEATURES P1), click-to-lock functionality (FEATURES P2)
+**Avoids:** Overlay covering point pitfall, reflow thrashing from DOM updates
+
+### Phase 6: Refinement — Adaptive Threshold & Performance Validation
+**Rationale:** Optimizations and polish after core works; not blocking for MVP but important for production quality.
+**Delivers:** Adaptive hover threshold based on point screen size and zoom level, performance testing at 10M/30M points, buffer read throttling, image loading optimization.
+**Implements:** Adaptive hover threshold (differentiator), performance-optimized rendering (differentiator)
+**Avoids:** Fixed threshold pitfall, readPixels every frame pitfall
 
 ### Phase Ordering Rationale
 
-- **Foundation first (Phase 1):** State reset consistency is the foundation for all other features. Changing sentinel values (-2 to -1) affects display logic and slider ranges. Establishing this early prevents bugs in later phases.
-- **Prevent confusion (Phase 2 & 3):** Dynamic disabling and auto-selection both improve UX by preventing confusing interactions. They are independent of each other and can be developed in parallel.
-- **Complete the loop (Phase 4):** Error recovery guidance ties everything together by providing actionable steps when things go wrong. This requires a stable error system, so it comes last.
+- **Data first:** Type extensions are foundational; catching missing data errors early prevents runtime failures
+- **GPU before UI:** Performance-critical shader work has the highest technical risk; solving it early prevents architectural dead-ends
+- **Projection before overlay:** Screen positioning is independent of hover detection but required for UI; parallelizes nicely with GPU work
+- **State before component:** Reactive state patterns must be proven correct before the component consumes them
+- **Overlay last:** Pure integration work; lowest risk, depends on all previous phases
 
-**Grouping rationale:** Phases 1-3 are independent changes that can be developed in parallel by different developers (touching different files: settings.ts, ControlsOverlay.vue, DataLoadControl.vue). Phase 4 requires testing across all error types and should be integrated after foundation changes are stable.
-
-**Pitfall avoidance by phase ordering:**
-- **Phase 1:** Avoids partial state updates by auditing all reset codepaths and using consistent sentinel values
-- **Phase 2:** Avoids "frozen UI" perception by adding clear visual indicators (opacity, cursor) and aria-disabled attributes
-- **Phase 3:** Avoids silent auto-selection confusion by requiring visual feedback mechanisms (toast message, tooltip)
-- **Phase 4:** Avoids generic errors by implementing context-aware guidance with actionable recovery steps
+This ordering maps directly to ARCHITECTURE.md build order but groups data + GPU work as foundation (Phases 1-2), projection + state as coordination (Phases 3-4), and UI + polish as delivery (Phases 5-6).
 
 ### Research Flags
 
 **Phases likely needing deeper research during planning:**
-- **Phase 4 (Error Recovery):** Error categorization system for context-aware messages needs definition. Consider creating an error type enum or error code mapping to guidance templates.
+- **Phase 2 (GPU Infrastructure):** Transform feedback float precision for indices > 16M points; WebGL 2 vs WebGL 1 compatibility testing; mobile GPU bandwidth constraints
+- **Phase 3 (Camera Integration):** Screen space coordinate system consistency between NDC mouse position and `gl_Position`; edge-clamping algorithm validation
+- **Phase 6 (Refinement):** Adaptive threshold formula tuning; image preloading/caching strategy for performance
 
 **Phases with standard patterns (skip research-phase):**
-- **Phase 1 (State Reset):** Well-documented Vue ref and computed patterns. Codebase shows clear integration points.
-- **Phase 2 (Dynamic Disabling):** Standard Vue attribute binding and accessibility patterns. MDN and Vue docs provide clear guidance.
-- **Phase 3 (Auto-Selection):** Vue conditional rendering and event emission patterns. Existing codebase has similar patterns.
+- **Phase 1 (Data Foundation):** Straightforward type extensions and data loading; well-documented Vue 3 patterns
+- **Phase 4 (Mouse Tracking & State):** Standard Vue 3 event handling and composables; existing patterns in codebase (`highlightedCluster`)
+- **Phase 5 (UI Overlay):** Common Vue component pattern with props and reactivity; CSS absolute positioning is standard
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Based on Vue 3 official documentation, codebase analysis confirms no new dependencies needed |
-| Features | HIGH | WCAG guidelines, MDN accessibility docs, and codebase analysis provide clear feature requirements |
-| Architecture | HIGH | Comprehensive codebase analysis of all Vue components, composables, and data flow patterns |
-| Pitfalls | MEDIUM | Vue 3 reactivity docs and common Vue patterns identified pitfalls, but limited empirical data on UX effectiveness |
+| Stack | HIGH | WebGL transform feedback, gl-matrix, and Vue 3 Composition API are all well-documented with official sources; no new dependencies required |
+| Features | HIGH | Table stakes and differentiators validated against WebGL tool patterns (Potree, CloudCompare) and UX best practices |
+| Architecture | HIGH | Integration points clearly identified in the existing codebase; data flow is straightforward extension of current patterns |
+| Pitfalls | MEDIUM | WebGL performance pitfalls are well-documented (HIGH), but Vue 3 UX patterns have less empirical validation (MEDIUM) |
 
 **Overall confidence:** HIGH
 
+Three research documents (STACK.md, FEATURES.md, ARCHITECTURE.md) are highly consistent and well-sourced. PITFALLS.md covers broader Vue 3 UX patterns beyond the hover feature but provides useful general guidance for state management and error handling.
+
 ### Gaps to Address
 
-- **Multi-table SQLite auto-selection strategies:** Current code only handles single-table auto-select. If multiple tables exist with similar names (e.g., "points_2023", "points_2024"), should we suggest to most recent based on naming convention? Define during planning.
+- **Transform feedback precision at scale:** Float may lose precision for point indices > 16M; needs testing at 30M points to verify correct point selection
+- **WebGL 2 vs WebGL 1 compatibility:** Transform feedback requires WebGL 2; fallback to color-coded picking needs validation on WebGL 1 devices
+- **Mobile performance:** GPU bandwidth constraints on mobile devices may affect buffer read overhead; device-specific testing needed
+- **Adaptive threshold formula:** Research suggests `threshold = pointScreenSize * 1.5` but empirical tuning is required for user feel
+- **Multi-table SQLite auto-selection:** Current architecture focuses on single table auto-select; multiple tables need a strategy for user preference
+- **Error state machine for guidance:** Context-aware error recovery messages require a categorization system (research indicates need but doesn't specify implementation)
 
-- **Error state machine implementation:** Context-aware guidance requires categorizing errors (file size, format, schema, memory). Need to define error categories and guidance templates during Phase 4 planning.
-
-- **User testing for auto-selection UX:** Research assumes visual feedback (toast message) improves UX, but needs A/B testing for validation. Consider user testing as part of Phase 3.
-
-- **WebGL state synchronization timing:** Dynamic disabling based on pointData null/empty is straightforward, but need to verify WebGL rendering doesn't lag behind Vue state updates (edge case: large dataset loading).
-
-**Handling during planning/execution:**
-- Define multi-table selection strategy in Phase 3 planning document
-- Create error category enum in Phase 4 planning before implementation
-- Include user testing task in Phase 3 acceptance criteria
-- Add manual testing for large dataset loading edge cases
+These gaps are non-blocking for MVP but should be addressed during Phase 2 (GPU precision testing) and Phase 6 (performance validation).
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- [Vue 3 Composition API Documentation](https://vuejs.org/guide/essentials/reactivity-fundamentals) — Ref API for state management
-- [Vue 3 Composables Guide](https://vuejs.org/guide/reusability/composables) — Composables for encapsulated stateful logic
-- [MDN: aria-disabled attribute](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Attributes/aria-disabled) — Official documentation for disabled states
-- [W3C WCAG 2.2 Error Identification](https://www.w3.org/WAI/WCAG21/Understanding/errors-identification.html) — WCAG 1.3.1 guideline requiring errors to be identified
-- **Codebase analysis** — All Vue components (WebGLPlayground.vue, ControlsOverlay.vue, DataLoadControl.vue), composables/settings.ts, DataProvider, validators.ts (818 lines analyzed)
+- **WebGL2Fundamentals — Picking** — https://webgl2fundamentals.org/webgl/lessons/webgl-picking.html — Authoritative guide on GPU-based picking, transform feedback, color-coded picking approaches
+- **MDN WebGL Best Practices** — https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_best_practices — Official performance guidelines, readPixels pitfalls, buffer management
+- **gl-matrix Documentation** — https://github.com/toji/gl-matrix — vec3.transformMat4() API, 3D→2D projection patterns
+- **Vue 3 Composition API** — https://vuejs.org/guide/reusability/composables — Official composable patterns, ref/watch reactivity
+- **WebGL Specification (Khronos)** — Transform feedback API, buffer object operations, readPixels behavior
 
 ### Secondary (MEDIUM confidence)
-- [W3C ARIA Combobox Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/) — Authoritative guide for dropdown/keyboard interactions
-- [MDN Accessibility Best Practices](https://developer.mozilla.org/en-US/docs/Web/Accessibility/Guides/Understanding_WCAG) — Accessibility principles for error recovery
-- [Vue 3 TypeScript Integration](https://vuejs.org/guide/typescript/composition-api) — TypeScript patterns with Composition API
+- **Existing codebase analysis** — ShaderManager.ts, Camera.ts, WebGLPlayground.vue, DataProvider.ts — Current architecture patterns, data flow, rendering loop structure
+- **Industry patterns** — Potree, CloudCompare, commercial LiDAR viewers — Common patterns for screen-space overlays, click-to-lock, GPU transform feedback
 
 ### Tertiary (LOW confidence)
-- Personal UX observation that users expect visual feedback for auto-actions (needs A/B testing)
-- Industry pattern observation that progressive disclosure reduces cognitive load (effectiveness varies by user expertise)
+- **Competitor UX analysis** — Based on general WebGL tool patterns; needs hands-on validation with specific tools for hover UX details
+- **Mobile GPU performance** — Limited empirical data on mobile transform feedback bandwidth; device-specific testing required
 
 ---
-
 *Research completed: February 4, 2026*
 *Ready for roadmap: yes*
