@@ -59,7 +59,8 @@ See `.planning/milestones/v1-ROADMAP.md` for complete v1 phase details.
 3. User can load data without tag/image columns and system works without errors or warnings
 4. User can load SQLite data with tag/image columns and columns are accessible in loaded data
 
-**Plans**: TBD
+**Plans**: 1 plan
+- [ ] 09-01-PLAN.md — Extend types, validation, and loaders for optional tag/image columns
 
 ### Phase 10: GPU Hover Detection
 
@@ -110,7 +111,7 @@ Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4 → 5 → 6 → 7 �
 | 6. Performance & UX Improvements | v1 | 3/3 | Complete | 2026-02-04 |
 | 7. Documentation Cleanup | v1 | 2/2 | Complete | 2026-02-04 |
 | 8. Highlighted Cluster Selector | v1 | 1/1 | Complete | 2026-02-04 |
-| 9. Data Foundation | v1.2 | 0/0 | Not started | - |
+| 9. Data Foundation | v1.2 | 0/1 | Ready to execute | - |
 | 10. GPU Hover Detection | v1.2 | 0/0 | Not started | - |
 | 11. Screen Overlay | v1.2 | 0/0 | Not started | - |
 
