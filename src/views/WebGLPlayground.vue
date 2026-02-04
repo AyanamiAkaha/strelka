@@ -210,6 +210,64 @@ const handleTableSelected = (tableName: string) => {
   }
 }
 
+/**
+ * Calculate hover detection thresholds based on point density
+ *
+ * Samples subset of points to estimate average spacing, then derives thresholds.
+ * Camera threshold: point must be within 5x avg spacing of camera.
+ * Cursor threshold: point must be within 1.5x avg spacing of cursor.
+ *
+ * @param positions - Float32Array of point positions (x,y,z interleaved)
+ * @param count - Number of points
+ * @returns Thresholds for camera and cursor distance
+ */
+function calculatePointDensityThresholds(positions: Float32Array, count: number): {
+  cameraDistThreshold: number,
+  cursorDistThreshold: number
+} {
+  // Sample subset of points (avoid O(n^2) with large datasets)
+  const SAMPLE_SIZE = Math.min(10000, count);
+  const stride = 3; // x, y, z
+
+  let totalNeighborDist = 0;
+  let sampleCount = 0;
+
+  // Sample points uniformly
+  for (let i = 0; i < SAMPLE_SIZE; i += 100) {
+    const idx = Math.floor(Math.random() * (count / 3)) * 3;
+    const p1x = positions[idx];
+    const p1y = positions[idx + 1];
+    const p1z = positions[idx + 2];
+
+    // Find nearest neighbor (simplified O(n) scan within sample)
+    let minDist = Infinity;
+    for (let j = 0; j < SAMPLE_SIZE && j < idx; j += 3) {
+      const dx = positions[j] - p1x;
+      const dy = positions[j + 1] - p1y;
+      const dz = positions[j + 2] - p1z;
+      const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+      if (dist > 0 && dist < minDist) {
+        minDist = dist;
+      }
+    }
+
+    if (minDist !== Infinity) {
+      totalNeighborDist += minDist;
+      sampleCount++;
+    }
+  }
+
+  // Average nearest neighbor distance as density measure
+  const avgSpacing = sampleCount > 0 ? totalNeighborDist / sampleCount : 1.0;
+
+  // Thresholds: use point spacing as baseline
+  const cameraDistThreshold = avgSpacing * 5.0;  // Camera must be within 5x avg spacing
+  const cursorDistThreshold = avgSpacing * 1.5;  // Cursor must be within 1.5x avg spacing
+
+  return { cameraDistThreshold, cursorDistThreshold };
+}
+
 const switchToGenerated = async () => {
   if (isLoading.value) return  // Prevent race condition (Pitfall 2)
   isLoading.value = true
