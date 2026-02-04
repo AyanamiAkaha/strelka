@@ -173,8 +173,14 @@ export class ShaderManager {
         uniform float u_pointSize;
         uniform float u_hilighted_cluster;
 
+        // Hover detection uniforms
+        uniform vec2 u_cursorWorldPos;
+        uniform float u_cameraDistThreshold;
+        uniform float u_cursorDistThreshold;
+
         varying float v_isHilighted;
         varying float v_revCamDist;
+        varying float v_isHovered;
 
         void main() {
           // No animation - just static points
@@ -187,6 +193,16 @@ export class ShaderManager {
 
           gl_Position = u_mvpMatrix * vec4(position, 1.0);
           gl_PointSize = clamp(u_pointSize * revCamDistance, 4.0, 50.0);
+
+          // Two-distance threshold hover detection
+          float distToCamera = length(u_cameraPosition - position);
+          bool cameraNear = distToCamera < u_cameraDistThreshold;
+
+          float distToCursor = length(u_cursorWorldPos - position);
+          bool cursorNear = distToCursor < u_cursorDistThreshold;
+
+          // Combined: Both conditions must be true
+          v_isHovered = float(cameraNear && cursorNear);
 
           v_isHilighted = abs(a_clusterId - u_hilighted_cluster) < 0.4 ? 1.0 : 0.0;
           v_revCamDist = revCamDistance;
