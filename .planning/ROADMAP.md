@@ -64,7 +64,7 @@ See `.planning/milestones/v1-ROADMAP.md` for complete v1 phase details.
 
 ### Phase 10: GPU Hover Detection
 
-**Goal**: GPU-based distance threshold detection identifies the nearest point to the cursor with adaptive threshold calculated in JavaScript
+**Goal**: GPU-based distance threshold detection identifies the nearest point to the cursor with density-based thresholds calculated in JavaScript
 
 **Depends on**: Phase 9
 
@@ -72,11 +72,14 @@ See `.planning/milestones/v1-ROADMAP.md` for complete v1 phase details.
 
 **Success Criteria** (what must be TRUE):
 1. User can move cursor over point cloud and the nearest point is detected and identified
-2. System maintains 30+ FPS when hovering over 5M points (acceptable per user clarification)
-3. Hover detection threshold adapts to zoom level (larger when zoomed out, smaller when zoomed in)
+2. System maintains 30+ FPS when hovering over 5M points
+3. Hover detection uses two-distance threshold (camera distance + cursor distance) derived from point density
 4. Threshold is calculated in JavaScript/TypeScript and passed to shader (not recalculated in shader)
 
-**Plans**: TBD
+**Plans**: 3 plans
+- [ ] 10-01-PLAN.md — Extend shaders for hover detection (uniforms, vertex/fragment logic)
+- [ ] 10-02-PLAN.md — Add mouse tracking and screen-to-world coordinate conversion
+- [ ] 10-03-PLAN.md — Implement density-based thresholds and render loop integration
 
 ### Phase 11: Screen Overlay
 
@@ -112,7 +115,7 @@ Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4 → 5 → 6 → 7 �
 | 7. Documentation Cleanup | v1 | 2/2 | Complete | 2026-02-04 |
 | 8. Highlighted Cluster Selector | v1 | 1/1 | Complete | 2026-02-04 |
 | 9. Data Foundation | v1.2 | 1/1 | Complete | 2026-02-05 |
-| 10. GPU Hover Detection | v1.2 | 0/0 | Not started | - |
+| 10. GPU Hover Detection | v1.2 | 0/3 | Ready to execute | - |
 | 11. Screen Overlay | v1.2 | 0/0 | Not started | - |
 
-**Milestone Progress:** v1 ✅ Complete | v1.2 🚧 Phase 9 ready to execute
+**Milestone Progress:** v1 ✅ Complete | v1.2 🚧 Phase 10 ready to execute
