@@ -27,9 +27,17 @@ The WebGL Clusters Playground successfully delivers data loading capabilities fo
 **Tech stack:** Vue 3.3.8, TypeScript 5.3.0, Vite 5.0.0, pure WebGL, gl-matrix 3.4.4, sql.js 1.13.0
 **User feedback:** Confirmed camera rotation works correctly at all angles, data loading functions as expected
 
-## Next Milestone Goals (v1.1)
+## Current Milestone: v1.1 UX Refinements
 
-**Focus:** UX refinements and technical debt cleanup
+**Goal:** Improve UX consistency and address accumulated technical debt from v1 milestone.
+
+**Target features:**
+- Fix highlightedCluster reset consistency (use -2 "None" instead of -1 "Noise")
+- Improve SQLite table selection UX (auto-select for single-table databases)
+- Disable cluster slider when no data loaded
+- Add error recovery guidance for common user issues
+
+No new feature requirements; focused on polish and UX improvements.
 
 Address accumulated debt from v1 milestone:
 - Fix highlightedCluster reset consistency (use -2 "None" instead of -1 "Noise")
@@ -110,4 +118,4 @@ Known issues: None critical. Minor UX debt tracked for v1.1 (highlightedCluster 
 | Two-step error handling (console + UI) | Technical details in console for debugging, brief messages for users | ✓ Good — Implemented in Phase 2/3 with error panel (Phase 4) |
 
 ---
-*Last updated: 2026-02-04 after v1 milestone completion*
+ *Last updated: 2026-02-04 after v1.1 milestone started*
