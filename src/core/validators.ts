@@ -40,13 +40,39 @@ export function validateJsonPoint(point: unknown, index: number): string | null 
     // -1 and null are valid noise cluster values
   }
 
+  // Check tag field if present: must be string or null
+  if ('tag' in p) {
+    if (p.tag !== null && typeof p.tag !== 'string') {
+      return `Point ${index} has invalid tag (must be string or null, got ${typeof p.tag})`
+    }
+  }
+
+  // Check image field if present: must be string or null
+  if ('image' in p) {
+    if (p.image !== null && typeof p.image !== 'string') {
+      return `Point ${index} has invalid image (must be string or null, got ${typeof p.image})`
+    }
+  }
+
   return null
+}
+
+/**
+ * Helper to normalize optional values to null
+ * @param value - Unknown value to normalize
+ * @returns null if value is undefined, null, or ""; otherwise returns string value
+ */
+function normalizeOptionalValue(value: unknown): string | null {
+  if (value === undefined || value === null || value === "") {
+    return null
+  }
+  return String(value)
 }
 
 /**
  * Parses JSON text and converts to WebGL-compatible Float32Array buffers
  * @param jsonText - JSON string to parse
- * @returns PointData object with positions, clusterIds, and count
+ * @returns PointData object with positions, clusterIds, optional tag/image indices and lookups, and count
  * @throws Error if JSON is invalid or violates constraints
  */
 export function parseJsonData(jsonText: string): PointData {
@@ -71,11 +97,45 @@ export function parseJsonData(jsonText: string): PointData {
       }
     }
 
+    // Detect optional columns by checking first row
+    const firstRow = data[0] as Record<string, unknown>
+    const hasTag = 'tag' in firstRow
+    const hasImage = 'image' in firstRow
+
+    // Create maps for unique tag/image values (index-based storage)
+    const tagLookup = hasTag ? new Map<string, number>() : null
+    const imageLookup = hasImage ? new Map<string, number>() : null
+
     // On success, create Float32Array positions (length * 3) and clusterIds (length)
     const positions = new Float32Array(data.length * 3)
     const clusterIds = new Float32Array(data.length)
 
-    // Fill buffers and clusterIds
+    // Allocate tag/image indices if columns detected
+    const tagIndices = hasTag ? new Float32Array(data.length) : null
+    const imageIndices = hasImage ? new Float32Array(data.length) : null
+
+    // First pass: populate maps with unique non-null tag/image values
+    if (hasTag && tagLookup) {
+      for (let i = 0; i < data.length; i++) {
+        const point = data[i] as JsonPoint
+        const tag = normalizeOptionalValue(point.tag)
+        if (tag !== null && !tagLookup.has(tag)) {
+          tagLookup.set(tag, tagLookup.size)
+        }
+      }
+    }
+
+    if (hasImage && imageLookup) {
+      for (let i = 0; i < data.length; i++) {
+        const point = data[i] as JsonPoint
+        const image = normalizeOptionalValue(point.image)
+        if (image !== null && !imageLookup.has(image)) {
+          imageLookup.set(image, imageLookup.size)
+        }
+      }
+    }
+
+    // Second pass: fill all arrays
     for (let i = 0; i < data.length; i++) {
       const point = data[i] as JsonPoint
       positions[i * 3] = point.x
@@ -85,11 +145,26 @@ export function parseJsonData(jsonText: string): PointData {
       // Fill clusterIds: use cluster value or -1 (noise) if missing/null
       const clusterId = (point.cluster === undefined || point.cluster === null) ? -1 : point.cluster
       clusterIds[i] = clusterId
+
+      // Fill tag/image indices using maps
+      if (hasTag && tagIndices && tagLookup) {
+        const tag = normalizeOptionalValue(point.tag)
+        tagIndices[i] = tag !== null ? tagLookup.get(tag)! : -1
+      }
+
+      if (hasImage && imageIndices && imageLookup) {
+        const image = normalizeOptionalValue(point.image)
+        imageIndices[i] = image !== null ? imageLookup.get(image)! : -1
+      }
     }
 
     return {
       positions,
       clusterIds,
+      tagIndices,
+      imageIndices,
+      tagLookup,
+      imageLookup,
       count: data.length
     }
   } catch (error) {
@@ -132,9 +207,15 @@ export function validateTableSchema(db: any, tableName: string): TableInfo {
   // Check if cluster column exists (optional)
   const hasCluster = columnNames.includes('cluster')
 
+  // Check if tag and image columns exist (optional)
+  const hasTag = columnNames.includes('tag')
+  const hasImage = columnNames.includes('image')
+
   return {
     name: tableName,
-    hasCluster
+    hasCluster,
+    hasTag,
+    hasImage
   }
 }
 

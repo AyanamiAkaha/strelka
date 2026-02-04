@@ -23,10 +23,22 @@ async function ensureSqlInitialized(): Promise<any> {
 export interface PointData {
   // Array of [x, y, z] coordinates flattened: [x1, y1, z1, x2, y2, z2, ...]
   positions: Float32Array
-  
-  // Array of cluster IDs: [clusterId1, clusterId2, ...]  
+
+  // Array of cluster IDs: [clusterId1, clusterId2, ...]
   clusterIds: Float32Array
-  
+
+  // Optional tag indices: index into tagLookup or -1, null if no tag column
+  tagIndices: Float32Array | null
+
+  // Optional image indices: index into imageLookup or -1, null if no image column
+  imageIndices: Float32Array | null
+
+  // Map of unique tag strings to their indices
+  tagLookup: Map<string, number> | null
+
+  // Map of unique image strings to their indices
+  imageLookup: Map<string, number> | null
+
   // Total number of points
   count: number
 }
@@ -109,6 +121,10 @@ export class DataProvider {
     return {
       positions,
       clusterIds,
+      tagIndices: null,
+      imageIndices: null,
+      tagLookup: null,
+      imageLookup: null,
       count: ppc * clusterCenters.length
     }
   }
@@ -178,6 +194,10 @@ export class DataProvider {
               pointData: {
                 positions: new Float32Array(0),
                 clusterIds: new Float32Array(0),
+                tagIndices: null,
+                imageIndices: null,
+                tagLookup: null,
+                imageLookup: null,
                 count: 0
               },
               tables
@@ -219,6 +239,10 @@ export class DataProvider {
                 pointData: {
                   positions,
                   clusterIds,
+                  tagIndices: null,
+                  imageIndices: null,
+                  tagLookup: null,
+                  imageLookup: null,
                   count
                 },
                 tables
@@ -299,7 +323,11 @@ export class DataProvider {
     
     return {
       positions,
-      clusterIds, 
+      clusterIds,
+      tagIndices: null,
+      imageIndices: null,
+      tagLookup: null,
+      imageLookup: null,
       count: totalPoints
     }
   }
