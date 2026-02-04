@@ -19,7 +19,7 @@ import { ref, onMounted, onUnmounted, reactive } from 'vue'
 interface Emits {
   (e: 'webgl-ready', gl: WebGL2RenderingContext | WebGLRenderingContext): void
   (e: 'webgl-error', error: string): void
-  (e: 'mouse-move', event: { deltaX: number, deltaY: number, buttons: number }): void
+  (e: 'mouse-move', event: { deltaX: number, deltaY: number, buttons: number, clientX: number, clientY: number }): void
   (e: 'mouse-wheel', delta: number): void
   (e: 'key-event', event: { key: string, pressed: boolean }): void
 }
@@ -117,9 +117,14 @@ const onMouseMove = (event: MouseEvent) => {
   const deltaX = event.clientX - mouseState.lastX
   const deltaY = event.clientY - mouseState.lastY
 
-  if (mouseState.isDown) {
-    emit('mouse-move', { deltaX, deltaY, buttons: mouseState.buttons })
-  }
+  // Always emit mouse-move for hover detection (even when button not pressed)
+  emit('mouse-move', {
+    deltaX,
+    deltaY,
+    buttons: mouseState.buttons,
+    clientX: event.clientX,
+    clientY: event.clientY
+  })
 
   mouseState.lastX = event.clientX
   mouseState.lastY = event.clientY
