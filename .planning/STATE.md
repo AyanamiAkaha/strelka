@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-01)
 
 **Core value:** Users can load and explore real point cluster data in 3D with interactive camera controls and cluster highlighting
-**Current focus:** Phase 8 - Highlighted Cluster Selector (pending planning)
+**Current focus:** Milestone complete - All v1.0 phases executed
 
 ## Current Position
 
-Phase: 8 of 8 (Highlighted Cluster Selector)
-Plan: 1 of 1 in current phase
+Phase: 8 of 8 (Highlighted Cluster Selector) - Complete
+Plan: 0 of 0 in current phase
 Status: Phase complete
-Last activity: 2026-02-04 - Completed 08-01-PLAN.md
+Last activity: 2026-02-04 - Completed Phase 8 verification
 
 Progress: [██████████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 25 (Phase 1: 3, Phase 1.1: 5, Phase 2: 3, Phase 3: 3, Phase 4: 3, Phase 5: 4, Phase 6: 3, Phase 7: 2)
-- Average duration: 2.0 min
-- Total execution time: 0.92 hours
+- Total plans completed: 26 (Phase 1: 3, Phase 1.1: 5, Phase 2: 3, Phase 3: 3, Phase 4: 3, Phase 5: 4, Phase 6: 3, Phase 7: 2, Phase 8: 1)
+- Average duration: 2.1 min
+- Total execution time: 0.94 hours
 
 **By Phase:**
 
@@ -35,8 +35,10 @@ Progress: [██████████████] 100%
 | | 5 | 4 | 4 | 2.5 min |
 | | 6 | 3 | 3 | 3.0 min |
 | | 7 | 2 | 2 | 4.0 min |
+| | 8 | 1 | 1 | 3.0 min |
 
 **Recent Trend:**
+- Phase 8-01 plan: 3 min
 - Phase 7-02 plan: 1 min
 - Phase 7-01 plan: 7 min
 - Phase 6 plans: 06-01 (2 min), 06-02 (2 min), 06-03 (3 min)
@@ -116,6 +118,18 @@ Recent decisions affecting current work:
        - Phase 06-03: Parent (WebGLPlayground) owns loading state, child (DataLoadControl) receives as read-only prop - single source of truth pattern
      - Phase 7-01: Document coordinate system inline in Camera class JSDoc instead of separate file
      - Phase 7-01: Remove obsolete TODO comment since all data loading methods already implemented
+     - Phase 07-02: Added @see Camera references in WebGLPlayground.vue, DebugInfo.vue, and ShaderManager.ts
+     - Phase 07-02: Developers can now navigate from camera usage to Camera.ts documentation
+     - Phase 8 complete: Highlighted Cluster Selector (1/1 plan complete)
+       - Phase 08-01: Pass pointData prop from WebGLPlayground to ControlsOverlay for maxClusterId computation
+       - Phase 08-01: Add maxClusterId computed property returning maximum cluster ID from data
+       - Phase 08-01: Add clusterDisplayValue computed property mapping values to human-readable labels
+       - Phase 08-01: Change highlightedCluster initial value from -1 to -2 (None state)
+       - Phase 08-01: Replace hard-coded radio buttons with dynamic slider control
+       - Phase 08-01: Slider adapts range based on maxClusterId computed property
+       - Phase 08-01: Add color-coded display for special values (gray None, red Noise, green Clusters)
+       - Phase 08-01: No shader changes needed - existing u_hilighted_cluster uniform in render loop handles slider changes
+
     
 ### Pending Todos
 
@@ -127,7 +141,7 @@ None yet.
 
 Issues that affect future work
 
-None. Phase 7 complete - All documentation cleanup done.
+None. Phase 8 complete - All v1.0 phases executed successfully.
 
 ### Roadmap Evolution
 
@@ -154,13 +168,16 @@ None. Phase 7 complete - All documentation cleanup done.
          - Phase 06-02: Delete WebGL resources in onUnmounted() in reverse order of creation (programs → shaders → buffers) per MDN best practices
          - Phase 06-02: Null out all resource references after deletion to prevent use-after-free bugs
          - Phase 06-03: Unified loading state across components with single source of truth in WebGLPlayground
-      - Phase 7 complete: Documentation Cleanup (2/2 plans complete)
-        - Phase 07-01: Added comprehensive JSDoc to Camera class with coordinate system documentation
-        - Phase 07-01: Added @param/@returns JSDoc tags to all Camera public methods
-        - Phase 07-01: Removed obsolete TODO comment from DataProvider.ts
-        - Phase 07-02: Added @see Camera references in WebGLPlayground.vue, DebugInfo.vue, and ShaderManager.ts
-        - Phase 07-02: Developers can now navigate from camera usage to Camera.ts documentation
-     - Phase 8 added: Highlighted Cluster Selector — interactive cluster highlighting with slider control
+       - Phase 7 complete: Documentation Cleanup (2/2 plans complete)
+         - Phase 07-01: Added comprehensive JSDoc to Camera class with coordinate system documentation
+         - Phase 07-01: Added @param/@returns JSDoc tags to all Camera public methods
+         - Phase 07-01: Removed obsolete TODO comment from DataProvider.ts
+         - Phase 07-02: Added @see Camera references in WebGLPlayground.vue, DebugInfo.vue, and ShaderManager.ts
+         - Phase 07-02: Developers can now navigate from camera usage to Camera.ts documentation
+       - Phase 8 complete: Highlighted Cluster Selector (1/1 plan complete)
+         - Phase 08-01: Dynamic slider replaced hard-coded radio buttons with adaptive range control
+         - Phase 08-01: Slider supports special values (-2: None, -1: Noise, 0+: Cluster X)
+         - Phase 08-01: Zero shader changes - existing uniform system handles slider changes perfectly
 
 ## Session Continuity
 
