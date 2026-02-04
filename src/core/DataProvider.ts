@@ -53,7 +53,6 @@ export class DataProvider {
   
   /**
    * Main function to get point data
-   * TODO: Implement your own data generation/loading logic here
    * 
    * Expected format:
    * - positions: Float32Array of [x, y, z, x, y, z, ...] coordinates
