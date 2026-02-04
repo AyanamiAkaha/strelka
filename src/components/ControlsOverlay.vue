@@ -72,9 +72,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { highlightedCluster, ppc } from '@/composables/settings';
-import DataLoadControl from './DataLoadControl.vue';
+import { ref, watch, computed } from 'vue'
+import { highlightedCluster, ppc } from '@/composables/settings'
+import { type PointData } from '@/core/DataProvider'
+import DataLoadControl from './DataLoadControl.vue'
 
 const emit = defineEmits<{
   'file-selected': [file: File],
@@ -87,6 +88,7 @@ const props = defineProps<{
   isLoading: boolean
   currentFile: File | null
   currentDataSource: 'generated' | 'loaded'
+  pointData: PointData | null
 }>()
 
 const ppcMagnitude = ref(4)
@@ -102,6 +104,22 @@ const handleTableSelected = (tableName: string) => {
 
 watch([ppcSlider, ppcMagnitude], () => {
   ppc.value = 10**ppcMagnitude.value * ppcSlider.value;
+})
+
+const maxClusterId = computed(() => {
+  if (!props.pointData || props.pointData.clusterIds.length === 0) {
+    return -1  // Return -1 when no data (slider disabled state)
+  }
+  // Find maximum value in clusterIds Float32Array
+  const clusterArray = Array.from(props.pointData.clusterIds)
+  return Math.max(...clusterArray)
+})
+
+const clusterDisplayValue = computed(() => {
+  const val = highlightedCluster.value
+  if (val === -2) return 'None'
+  if (val === -1) return 'Noise'
+  return `Cluster ${val}`
 })
 </script>
 

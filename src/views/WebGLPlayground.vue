@@ -17,6 +17,7 @@
       :is-loading="isLoading"
       :current-file="currentFile"
       :current-data-source="currentDataSource"
+      :point-data="pointData"
     />
     <DebugInfo v-if="camera"
       :camera="camera!.toDebugInfo()"
