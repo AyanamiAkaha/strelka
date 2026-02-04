@@ -115,7 +115,7 @@ Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4 → 5 → 6 → 7 �
 | 7. Documentation Cleanup | v1 | 2/2 | Complete | 2026-02-04 |
 | 8. Highlighted Cluster Selector | v1 | 1/1 | Complete | 2026-02-04 |
 | 9. Data Foundation | v1.2 | 1/1 | Complete | 2026-02-05 |
-| 10. GPU Hover Detection | v1.2 | 0/3 | Ready to execute | - |
-| 11. Screen Overlay | v1.2 | 0/0 | Not started | - |
+| 10. GPU Hover Detection | v1.2 | 3/3 | Complete | 2026-02-05 |
+| 11. Screen Overlay | v1.2 | 0/0 | Ready to execute | - |
 
-**Milestone Progress:** v1 ✅ Complete | v1.2 🚧 Phase 10 ready to execute
+**Milestone Progress:** v1 ✅ Complete | v1.2 🚧 Phase 10 complete, Phase 11 ready to execute
