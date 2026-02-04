@@ -12,6 +12,11 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * Debug display component for camera state and rendering metrics.
+ * @see Camera.toDebugInfo() - Method providing debug position, rotation, and distance data
+ * @see Camera - Camera class with Y-up coordinate system documentation
+ */
 import { Vec3 } from '@/core/Math'
 
 interface Props {
