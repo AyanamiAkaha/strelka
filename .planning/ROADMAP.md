@@ -17,8 +17,8 @@ Decimal phases appear between their surrounding integers in numeric order.
   - [x] **Phase 3: SQLite Data Loader** - Add sql.js integration for loading .db files
    - [x] **Phase 4: Data Source Toggle & Error Display** - Enable switching between data sources with error UI
    - [x] **Phase 5: Fix GPU Memory & Loading Issues** - Close critical blockers from milestone audit
-   - [ ] **Phase 6: Performance & UX Improvements** - Add rendering guards and cleanup
-   - [ ] **Phase 7: Documentation Cleanup** - Resolve technical debt
+   - [x] **Phase 6: Performance & UX Improvements** - Add rendering guards and cleanup
+   - [x] **Phase 7: Documentation Cleanup** - Resolve technical debt
    - [ ] **Phase 8: Highlighted Cluster Selector** - Add interactive cluster highlighting with slider control
 
 ## Phase Details

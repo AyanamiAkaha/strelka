@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-01)
 
 **Core value:** Users can load and explore real point cluster data in 3D with interactive camera controls and cluster highlighting
-**Current focus:** Phase 7 - Documentation Cleanup (in progress)
+**Current focus:** Phase 8 - Highlighted Cluster Selector (pending planning)
 
 ## Current Position
 
-Phase: 7 of 8 (Documentation Cleanup)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-02-04 - Completed 07-02-PLAN.md
+Phase: 8 of 8 (Highlighted Cluster Selector)
+Plan: 0 of 0 in current phase
+Status: Phase pending
+Last activity: 2026-02-04 - Completed Phase 7 documentation cleanup
 
 Progress: [██████████████] 100%
 
