@@ -133,6 +133,13 @@ let pointData: PointData | null = null
 let shaderManager: ShaderManager | null = null
 let glCache: WebGL2RenderingContext | WebGLRenderingContext
 
+// Hover detection state
+const mouseX = ref(0)
+const mouseY = ref(0)
+const lastMouseX = ref(0)
+const lastMouseY = ref(0)
+const hoverThresholds = ref<{cameraDistThreshold: number, cursorDistThreshold: number} | null>(null)
+
 watch(ppc, () => regenPoints())
 
 /**
@@ -152,6 +159,10 @@ const regenPoints = () => {
     pointData = DataProvider.getPointData(ppc.value)
     pointCount.value = pointData.positions.length / 3
     setupBuffers(glCache)
+
+    // Calculate hover thresholds from point density
+    const thresholds = calculatePointDensityThresholds(pointData.positions, pointCount.value)
+    hoverThresholds.value = thresholds
 
     // Clear errors on successful data generation
     clearErrors()
@@ -174,6 +185,10 @@ const handleLoadFile = async (file: File, tableName?: string) => {
       pointData = loadedData
       pointCount.value = loadedData.positions.length / 3
       setupBuffers(glCache)
+
+      // Calculate hover thresholds from point density
+      const thresholds = calculatePointDensityThresholds(loadedData.positions, pointCount.value)
+      hoverThresholds.value = thresholds
     } else if (file.name.endsWith('.db') || file.name.endsWith('.sqlite')) {
       // GUARD: Don't load without tableName
       if (!tableName) {
@@ -187,6 +202,10 @@ const handleLoadFile = async (file: File, tableName?: string) => {
       pointCount.value = result.pointData.positions.length / 3
       console.log('Loaded point data from SQLite file:', pointData.positions.slice(0, 10), '...; total points:', pointCount.value),
       setupBuffers(glCache)
+
+      // Calculate hover thresholds from point density
+      const thresholds = calculatePointDensityThresholds(loadedData.positions, pointCount.value)
+      hoverThresholds.value = thresholds
     }
 
     // Clear errors on successful load (auto-dismiss behavior)
@@ -349,7 +368,12 @@ const switchToLoaded = async () => {
 }
 
 // Old clearLoadError function replaced by clearErrors() from error array system
-const onMouseMove = (event: { deltaX: number, deltaY: number, buttons: number }) => {
+const onMouseMove = (event: { deltaX: number, deltaY: number, buttons: number, clientX: number, clientY: number }) => {
+  // Track mouse position for hover detection (always update, even without button press)
+  lastMouseX.value = event.clientX
+  lastMouseY.value = event.clientY
+
+  // Handle camera rotation when button is pressed
   if (camera.value && event.buttons > 0) {
     camera.value.handleMouseMove(event.deltaX, event.deltaY)
   }
