@@ -6,6 +6,18 @@ import { validateTableSchema } from './validators'
 let SQL: any = null
 
 /**
+ * Helper to normalize optional values to null
+ * @param value - Unknown value to normalize
+ * @returns null if value is undefined, null, or ""; otherwise returns string value
+ */
+function normalizeOptionalValue(value: unknown): string | null {
+  if (value === undefined || value === null || value === "") {
+    return null
+  }
+  return String(value)
+}
+
+/**
  * Ensure SQL module is initialized before use
  * @returns Promise that resolves with initialized SQL module
  */
@@ -216,14 +228,56 @@ export class DataProvider {
             throw new Error(`Dataset too large: ${count} points (max 30,000,000)`)
           }
 
+          // Create maps for unique tag/image values (index-based storage)
+          const tagLookup = tableInfo.hasTag ? new Map<string, number>() : null
+          const imageLookup = tableInfo.hasImage ? new Map<string, number>() : null
+
           // Pre-allocate Float32Arrays for WebGL
           const positions = new Float32Array(count * 3)
           const clusterIds = new Float32Array(count)
+          const tagIndices = tableInfo.hasTag ? new Float32Array(count) : null
+          const imageIndices = tableInfo.hasImage ? new Float32Array(count) : null
           let index = 0
 
-          // Process rows incrementally with db.each() to avoid loading all data into memory at once
+          // Build dynamic SELECT query with optional columns
+          const tagCol = tableInfo.hasTag ? ', tag' : ''
+          const imageCol = tableInfo.hasImage ? ', image' : ''
+          const query = `SELECT x, y, z${tableInfo.hasCluster ? ', cluster' : ''}${tagCol}${imageCol} FROM ${tableName}`
+
+          // First pass: populate maps with unique non-null tag/image values
+          if (tableInfo.hasTag && tagLookup) {
+            const tagQuery = `SELECT tag FROM ${tableName} WHERE tag IS NOT NULL AND tag != ''`
+            const tagResults = db.exec(tagQuery)
+            if (tagResults && tagResults.length > 0) {
+              const uniqueTags = new Set<string>()
+              for (const row of tagResults[0].values as unknown[][]) {
+                const tag = normalizeOptionalValue(row[0])
+                if (tag !== null && !uniqueTags.has(tag)) {
+                  uniqueTags.add(tag)
+                  tagLookup.set(tag, tagLookup.size)
+                }
+              }
+            }
+          }
+
+          if (tableInfo.hasImage && imageLookup) {
+            const imageQuery = `SELECT image FROM ${tableName} WHERE image IS NOT NULL AND image != ''`
+            const imageResults = db.exec(imageQuery)
+            if (imageResults && imageResults.length > 0) {
+              const uniqueImages = new Set<string>()
+              for (const row of imageResults[0].values as unknown[][]) {
+                const image = normalizeOptionalValue(row[0])
+                if (image !== null && !uniqueImages.has(image)) {
+                  uniqueImages.add(image)
+                  imageLookup.set(image, imageLookup.size)
+                }
+              }
+            }
+          }
+
+          // Second pass: process rows incrementally with db.each() to avoid loading all data into memory at once
           db.each(
-            `SELECT x, y, z${tableInfo.hasCluster ? ', cluster' : ''} FROM ${tableName}`,
+            query,
             {},
             (row: any) => {
               // Row is object with column names as keys, not array
@@ -231,6 +285,19 @@ export class DataProvider {
               positions[index * 3 + 1] = row.y as number
               positions[index * 3 + 2] = row.z as number
               clusterIds[index] = tableInfo.hasCluster ? (row.cluster as number ?? -1) : -1
+
+              // Process optional tag field
+              if (tableInfo.hasTag && tagIndices && tagLookup) {
+                const tag = normalizeOptionalValue(row.tag)
+                tagIndices[index] = tag !== null ? tagLookup.get(tag)! : -1
+              }
+
+              // Process optional image field
+              if (tableInfo.hasImage && imageIndices && imageLookup) {
+                const image = normalizeOptionalValue(row.image)
+                imageIndices[index] = image !== null ? imageLookup.get(image)! : -1
+              }
+
               index++
             },
             () => {
@@ -239,10 +306,10 @@ export class DataProvider {
                 pointData: {
                   positions,
                   clusterIds,
-                  tagIndices: null,
-                  imageIndices: null,
-                  tagLookup: null,
-                  imageLookup: null,
+                  tagIndices,
+                  imageIndices,
+                  tagLookup,
+                  imageLookup,
                   count
                 },
                 tables
