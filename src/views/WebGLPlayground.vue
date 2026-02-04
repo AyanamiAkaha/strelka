@@ -71,6 +71,10 @@ interface ErrorInfo {
   timestamp: number
 }
 
+/**
+ * Main WebGL rendering component with camera controls for 3D point visualization.
+ * @see Camera - Quaternion-based camera with Y-up coordinate system documentation
+ */
 const canvasRef = ref<InstanceType<typeof WebGLCanvas>>()
 const error = ref<string>('')
 const camera = ref<Camera>()
@@ -130,6 +134,10 @@ let glCache: WebGL2RenderingContext | WebGLRenderingContext
 
 watch(ppc, () => regenPoints())
 
+/**
+ * Initialize WebGL context, camera, and rendering loop.
+ * @see Camera - Quaternion-based camera with Y-up coordinate system documentation
+ */
 const onWebGLReady = (gl: WebGL2RenderingContext | WebGLRenderingContext) => {
   camera.value = new Camera()
   glCache = gl
