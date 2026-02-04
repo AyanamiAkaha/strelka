@@ -184,6 +184,14 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Depends on**: Phase 7
 
+**Success Criteria** (what must be TRUE):
+1. User can select clusters to highlight using a slider control (not radio buttons)
+2. Slider range dynamically adapts to loaded data (max = highest cluster ID)
+3. Selected cluster is highlighted in orange when rendered
+4. Special values display correctly: -2 → "None", -1 → "Noise", 0+ → "Cluster X"
+5. Slider works seamlessly with both generated and loaded data
+6. WebGL uniform updates automatically via existing render loop (no shader changes)
+
 **Plans**: 1 plan (in 1 wave)
 
 Plans:
