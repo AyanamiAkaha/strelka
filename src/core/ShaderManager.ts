@@ -150,8 +150,10 @@ export class ShaderManager {
   }
 
   /**
-   * Get GPU-optimized shaders that calculate matrices in vertex shader
+   * Get GPU-optimized shaders that calculate matrices in vertex shader.
    * This eliminates the need for JavaScript matrix calculations!
+   * @see Camera.getShaderUniforms() - Method providing camera position, matrices, and projection values
+   * @see Camera - Camera class with Y-up coordinate system documentation
    */
   getGPUMatrixShaders(): ShaderSource {
     return {
