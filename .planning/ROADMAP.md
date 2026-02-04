@@ -32,7 +32,7 @@ WebGL Clusters Playground — 3D point cloud visualization with data loading, ca
 
 **Milestone Goal:** Enable users to hover over points to see associated tags and images via GPU-based detection and screen-space overlay.
 
-- [ ] Phase 9: Data Foundation (1 plan)
+- [x] Phase 9: Data Foundation (1 plan) — completed 2026-02-05
 - [ ] Phase 10: GPU Hover Detection ([N] plans)
 - [ ] Phase 11: Screen Overlay ([N] plans)
 
@@ -60,7 +60,7 @@ See `.planning/milestones/v1-ROADMAP.md` for complete v1 phase details.
 4. User can load SQLite data with tag/image columns and columns are accessible in loaded data
 
 **Plans**: 1 plan
-- [ ] 09-01-PLAN.md — Extend types, validation, and loaders for optional tag/image columns
+- [x] 09-01-PLAN.md — Extend types, validation, and loaders for optional tag/image columns — completed 2026-02-05
 
 ### Phase 10: GPU Hover Detection
 
@@ -111,7 +111,7 @@ Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4 → 5 → 6 → 7 �
 | 6. Performance & UX Improvements | v1 | 3/3 | Complete | 2026-02-04 |
 | 7. Documentation Cleanup | v1 | 2/2 | Complete | 2026-02-04 |
 | 8. Highlighted Cluster Selector | v1 | 1/1 | Complete | 2026-02-04 |
-| 9. Data Foundation | v1.2 | 0/1 | Ready to execute | - |
+| 9. Data Foundation | v1.2 | 1/1 | Complete | 2026-02-05 |
 | 10. GPU Hover Detection | v1.2 | 0/0 | Not started | - |
 | 11. Screen Overlay | v1.2 | 0/0 | Not started | - |
 
