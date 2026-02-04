@@ -213,6 +213,7 @@ export class ShaderManager {
 
         varying float v_isHilighted;
         varying float v_revCamDist;
+        varying float v_isHovered;
 
         void main() {
           vec2 coord = gl_PointCoord - vec2(0.5);
@@ -226,7 +227,13 @@ export class ShaderManager {
 
           vec3 c_base = v_isHilighted > 0.5 ? vec3(1.0, 0.5, 0.2) : vec3(1.0);
           vec3 c_far = v_isHilighted > 0.5 ? vec3(0.1, 0.0, 0.1) : vec3(0.0, 0.0, 0.3);
-          vec3 color = mix(c_far, c_base, v_revCamDist);
+
+          // 2x brightness boost when hovered
+          vec3 c_hovered = v_isHovered > 0.5 ? c_base * 2.0 : c_base;
+
+          // Mix based on hover state (apply boost to both near and far colors)
+          vec3 c_far_hovered = v_isHovered > 0.5 ? vec3(0.2, 0.1, 0.2) : c_far;
+          vec3 color = mix(c_far_hovered, c_hovered, v_revCamDist);
 
           gl_FragColor = vec4(color, intensity);
         }
