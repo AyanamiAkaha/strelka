@@ -187,7 +187,7 @@ const handleLoadFile = async (file: File, tableName?: string) => {
       setupBuffers(glCache)
 
       // Calculate hover thresholds from point density
-      const thresholds = calculatePointDensityThresholds(loadedData.positions, pointCount.value)
+      const thresholds = calculatePointDensityThresholds(result.pointData.positions, pointCount.value)
       hoverThresholds.value = thresholds
     } else if (file.name.endsWith('.db') || file.name.endsWith('.sqlite')) {
       // GUARD: Don't load without tableName
@@ -204,7 +204,7 @@ const handleLoadFile = async (file: File, tableName?: string) => {
       setupBuffers(glCache)
 
       // Calculate hover thresholds from point density
-      const thresholds = calculatePointDensityThresholds(loadedData.positions, pointCount.value)
+      const thresholds = calculatePointDensityThresholds(result.pointData.positions, pointCount.value)
       hoverThresholds.value = thresholds
     }
 
