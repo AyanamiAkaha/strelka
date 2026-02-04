@@ -175,8 +175,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Plans**: 2 plans (in 2 waves)
 
-   - [ ] 07-01-PLAN.md — Add coordinate system JSDoc to Camera.ts
-   - [ ] 07-02-PLAN.md — Resolve or update TODO comments in DataProvider.ts
+   - [ ] 07-01-PLAN.md — Add comprehensive JSDoc to Camera.ts and resolve DataProvider TODO
+   - [ ] 07-02-PLAN.md — Add @see cross-references from camera consumers to Camera.ts
 
 ### Phase 8: Highlighted Cluster Selector
 
