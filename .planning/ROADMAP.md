@@ -2,24 +2,37 @@
 
 ## Overview
 
-This roadmap delivers data loading capabilities for WebGL point cloud visualization, fixing camera rotation bugs and enabling users to load real datasets from JSON and SQLite formats. The journey starts with foundational camera fixes, progresses through data loading pipelines, and culminates with UI integration for switching between generated and loaded data.
+WebGL Clusters Playground — 3D point cloud visualization with data loading, camera controls, and cluster highlighting.
+
+## Milestones
+
+- ✅ **v1 Data Loading Capabilities** — Phases 1, 1.1, 2-8 (shipped 2026-02-04) — [See full details](./milestones/v1-ROADMAP.md)
+- 📋 **v1.1 UX Refinements** — Phases 9-11 (planned)
 
 ## Phases
 
-**Phase Numbering:**
-- Integer phases (1, 2, 3): Planned milestone work
-- Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
+<details>
+<summary>✅ v1 Data Loading Capabilities (Phases 1, 1.1, 2-8) — SHIPPED 2026-02-04</summary>
 
-Decimal phases appear between their surrounding integers in numeric order.
+- [x] **Phase 1: Camera Rotation Fix** (3/3 plans) — completed 2026-02-02
+- [x] **Phase 1.1: Quaternion-Based Camera** (5/5 plans, INSERTED) — completed 2026-02-02
+- [x] **Phase 2: JSON Data Loader** (3/3 plans) — completed 2026-02-02
+- [x] **Phase 3: SQLite Data Loader** (3/3 plans) — completed 2026-02-03
+- [x] **Phase 4: Data Source Toggle & Error Display** (3/3 plans) — completed 2026-02-03
+- [x] **Phase 5: Fix GPU Memory & Loading Issues** (4/4 plans) — completed 2026-02-03
+- [x] **Phase 6: Performance & UX Improvements** (3/3 plans) — completed 2026-02-04
+- [x] **Phase 7: Documentation Cleanup** (2/2 plans) — completed 2026-02-04
+- [x] **Phase 8: Highlighted Cluster Selector** (1/1 plan) — completed 2026-02-04
 
-  - [x] **Phase 1: Camera Rotation Fix** - Fix Euler rotation axis signs and document coordinate system
-  - [x] **Phase 2: JSON Data Loader** - Implement file picker, JSON parsing, and error handling
-  - [x] **Phase 3: SQLite Data Loader** - Add sql.js integration for loading .db files
-   - [x] **Phase 4: Data Source Toggle & Error Display** - Enable switching between data sources with error UI
-   - [x] **Phase 5: Fix GPU Memory & Loading Issues** - Close critical blockers from milestone audit
-   - [x] **Phase 6: Performance & UX Improvements** - Add rendering guards and cleanup
-   - [x] **Phase 7: Documentation Cleanup** - Resolve technical debt
-    - [x] **Phase 8: Highlighted Cluster Selector** - Add interactive cluster highlighting with slider control
+**Total:** 9 phases, 27 plans, all complete
+
+</details>
+
+### 📋 v1.1 UX Refinements (Planned)
+
+- [ ] Phase 9: highlightedCluster Reset Consistency ([N] plans)
+- [ ] Phase 10: SQLite Table Selection UX ([N] plans)
+- [ ] Phase 11: Cluster Slider Disable State ([N] plans)
 
 ## Phase Details
 
@@ -205,16 +218,19 @@ Decimal phases appear between their surrounding integers in numeric order.
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
+Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9-11
 
-  | Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| |  1. Camera Rotation Fix | 3/3 | Complete | 2026-02-02 |
-| |  1.1. Implement Quaternion-Based Camera | 5/5 | Complete | 2026-02-02 |
-| |  2. JSON Data Loader | 3/3 | Complete | 2026-02-02 |
-| |  3. SQLite Data Loader | 3/3 | Complete | 2026-02-03 |
-  | 4. Data Source Toggle & Error Display | 3/3 | Complete | 2026-02-03 |
-   | 5. Fix GPU Memory & Loading Issues | 4/4 | Complete | 2026-02-03 |
-    | 6. Performance & UX Improvements | 3/3 | Complete | 2026-02-04 |
-|   7. Documentation Cleanup | 2/2 | Complete | 2026-02-04 |
-   | 8. Highlighted Cluster Selector | 1/1 | Complete | 2026-02-04 |
+  | Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|---------------|--------|-----------|
+| | 1. Camera Rotation Fix | v1 | 3/3 | Complete | 2026-02-02 |
+| | 1.1. Implement Quaternion-Based Camera | v1 | 5/5 | Complete | 2026-02-02 |
+| | 2. JSON Data Loader | v1 | 3/3 | Complete | 2026-02-02 |
+| | 3. SQLite Data Loader | v1 | 3/3 | Complete | 2026-02-03 |
+  | 4. Data Source Toggle & Error Display | v1 | 3/3 | Complete | 2026-02-03 |
+    | 5. Fix GPU Memory & Loading Issues | v1 | 4/4 | Complete | 2026-02-03 |
+     | 6. Performance & UX Improvements | v1 | 3/3 | Complete | 2026-02-04 |
+ |   7. Documentation Cleanup | v1 | 2/2 | Complete | 2026-02-04 |
+    | 8. Highlighted Cluster Selector | v1 | 1/1 | Complete | 2026-02-04 |
+| | 9. highlightedCluster Reset Consistency | v1.1 | 0/3 | Not started | - |
+| | 10. SQLite Table Selection UX | v1.1 | 0/2 | Not started | - |
+| | 11. Cluster Slider Disable State | v1.1 | 0/1 | Not started | - |

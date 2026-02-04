@@ -8,27 +8,69 @@ A WebGL clusters playground that loads and visualizes large 3D point datasets (1
 
 Users can load and explore real point cluster data in 3D with interactive camera controls and cluster highlighting.
 
+## Current State
+
+**Shipped:** v1 — Data Loading Capabilities (2026-02-04)
+
+The WebGL Clusters Playground successfully delivers data loading capabilities for JSON and SQLite formats, quaternion-based camera controls, cluster highlighting, and comprehensive error handling.
+
+**Delivered features:**
+- Quaternion-based camera rotation (eliminated gimbal lock at extreme angles)
+- JSON data loading with validation and error handling
+- SQLite data loading with sql.js WebAssembly integration
+- Data source toggle between generated and loaded data
+- GPU memory management (buffer cleanup, resource disposal)
+- Interactive cluster highlighting with dynamic slider
+- Comprehensive error display system
+
+**Codebase:** 2,454 lines (TypeScript + Vue)
+**Tech stack:** Vue 3.3.8, TypeScript 5.3.0, Vite 5.0.0, pure WebGL, gl-matrix 3.4.4, sql.js 1.13.0
+**User feedback:** Confirmed camera rotation works correctly at all angles, data loading functions as expected
+
+## Next Milestone Goals (v1.1)
+
+**Focus:** UX refinements and technical debt cleanup
+
+Address accumulated debt from v1 milestone:
+- Fix highlightedCluster reset consistency (use -2 "None" instead of -1 "Noise")
+- Improve SQLite table selection UX (auto-select for single-table databases)
+- Disable cluster slider when no data loaded (maxClusterId < -2)
+- Add error recovery guidance for common user issues
+
+No new feature requirements; focused on polish and UX improvements.
+
 ## Requirements
 
 ### Validated
 
 <!-- Shipped and confirmed valuable. -->
 
-- ✓ WebGL point rendering with additive blending — existing
-- ✓ 6DOF camera controls (WASD + mouse look + zoom) — existing
-- ✓ Spiral cluster data generation — existing
-- ✓ Interactive controls (cluster highlighting, points per cluster) — existing
-- ✓ Real-time FPS counter and debug info — existing
+**Pre-existing (before v1):**
+- ✓ WebGL point rendering with additive blending
+- ✓ 6DOF camera controls (WASD + mouse look + zoom)
+- ✓ Spiral cluster data generation
+- ✓ Interactive controls (cluster highlighting, points per cluster)
+- ✓ Real-time FPS counter and debug info
+
+**Shipped in v1:**
+- ✓ Camera rotation with quaternion-based system — v1.1 (eliminated gimbal lock)
+- ✓ Coordinate system documentation (Y-up, right-handed) — v1.1
+- ✓ JSON loader with file picker and validation — v1
+- ✓ SQLite loader with sql.js WebAssembly — v1
+- ✓ Data source toggle (Generate/Load) — v1
+- ✓ Error display system — v1
+- ✓ GPU memory management — v1
+- ✓ Interactive cluster highlighting with slider — v1
 
 ### Active
 
 <!-- Current scope. Building toward these. -->
 
-- [ ] Fix camera rotation direction in freeflight mode (wrong direction on some axes)
-- [ ] Add JSON loader for point data with cluster IDs
-- [ ] Add SQLite loader for flat x, y, z, cluster table
-- [ ] Add UI to toggle between generated and loaded data
-- [ ] Support 100K-500K point datasets with single load pattern
+**v1.1 Milestone Goals (UX refinements):**
+- [ ] Fix highlightedCluster reset consistency (-2 "None" instead of -1 "Noise")
+- [ ] Improve SQLite table selection UX (auto-select for single-table databases)
+- [ ] Disable cluster slider when no data loaded
+- [ ] Add error recovery guidance for common user issues
 
 ### Out of Scope
 
@@ -42,9 +84,11 @@ Users can load and explore real point cluster data in 3D with interactive camera
 
 ## Context
 
-Existing WebGL playground with working basic rendering and camera controls. Camera rotation has bug where rotation direction is incorrect (possibly negative axis calculations or gimbal lock). Current spiral generator tested with up to 10M points. Real data needed instead of just generated test data.
+Post-v1 state: WebGL playground with data loading capabilities (JSON and SQLite), quaternion-based camera controls, cluster highlighting with slider, and comprehensive error handling. All v1 requirements shipped successfully. Accumulated 4 items of technical debt (UX refinements) for v1.1 milestone.
 
-Tech stack: Vue 3.3.8, TypeScript 5.3.0, Vite 5.0.0, pure WebGL (no 3D libraries).
+Tech stack: Vue 3.3.8, TypeScript 5.3.0, Vite 5.0.0, pure WebGL, gl-matrix 3.4.4, sql.js 1.13.0.
+
+Known issues: None critical. Minor UX debt tracked for v1.1 (highlightedCluster reset consistency, SQLite table selection UX, slider disable state, error recovery guidance).
 
 ## Constraints
 
@@ -60,9 +104,10 @@ Tech stack: Vue 3.3.8, TypeScript 5.3.0, Vite 5.0.0, pure WebGL (no 3D libraries
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Fix Euler first, then quaternion migration | Two-step approach: debug current implementation before major refactor | — Pending |
-| Keep generator alongside loaders | Preserve existing functionality, add loader as option | — Pending |
-| Flat SQLite table structure | Simplest schema for read-only visualization, no joins needed | — Pending |
+| Fix Euler first, then quaternion migration | Two-step approach: debug current implementation before major refactor | ✓ Good — Phase 1 identified gimbal lock, Phase 1.1 implemented quaternions |
+| Keep generator alongside loaders | Preserve existing functionality, add loader as option | ✓ Good — Both data sources available with toggle UI (Phase 4) |
+| Flat SQLite table structure | Simplest schema for read-only visualization, no joins needed | ✓ Good — Validated with PRAGMA table_info(), works as expected (Phase 3) |
+| Two-step error handling (console + UI) | Technical details in console for debugging, brief messages for users | ✓ Good — Implemented in Phase 2/3 with error panel (Phase 4) |
 
 ---
-*Last updated: 2026-02-01 after initialization*
+*Last updated: 2026-02-04 after v1 milestone completion*
