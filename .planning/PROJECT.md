@@ -27,25 +27,23 @@ The WebGL Clusters Playground successfully delivers data loading capabilities fo
 **Tech stack:** Vue 3.3.8, TypeScript 5.3.0, Vite 5.0.0, pure WebGL, gl-matrix 3.4.4, sql.js 1.13.0
 **User feedback:** Confirmed camera rotation works correctly at all angles, data loading functions as expected
 
-## Current Milestone: v1.1 UX Refinements
+## Current Milestone: v1.2 Point Hover with Tag/Image Display
 
-**Goal:** Improve UX consistency and address accumulated technical debt from v1 milestone.
+**Goal:** Enable users to hover over points to see associated tags and images.
 
 **Target features:**
-- Fix highlightedCluster reset consistency (use -2 "None" instead of -1 "Noise")
-- Improve SQLite table selection UX (auto-select for single-table databases)
-- Disable cluster slider when no data loaded
-- Add error recovery guidance for common user issues
+- Detect hovered point using distance threshold heuristic
+- Buffer-based communication (point index + depth, LWW or depth-based preferred)
+- Return screen position (canvas space) of hovered point for UI positioning
+- Vue/TS side displays tag/image when point is hovered
+- Support optional `tag` and `image` columns in JSON/SQLite data
+- Silently skip display if tag/image columns are missing from data
+- Performance: maintain 45 FPS @ 30M points (buffer read/write overhead acceptable)
 
-No new feature requirements; focused on polish and UX improvements.
-
-Address accumulated debt from v1 milestone:
-- Fix highlightedCluster reset consistency (use -2 "None" instead of -1 "Noise")
-- Improve SQLite table selection UX (auto-select for single-table databases)
-- Disable cluster slider when no data loaded (maxClusterId < -2)
-- Add error recovery guidance for common user issues
-
-No new feature requirements; focused on polish and UX improvements.
+Technical approach:
+- 2D buffer for hover detection (depth-based: point index + depth, update if new depth > current)
+- Mouse position passed as buffer uniform/input
+- Vue/TS side decides display behavior (outside WebGL)
 
 ## Requirements
 
@@ -74,11 +72,14 @@ No new feature requirements; focused on polish and UX improvements.
 
 <!-- Current scope. Building toward these. -->
 
-**v1.1 Milestone Goals (UX refinements):**
-- [ ] Fix highlightedCluster reset consistency (-2 "None" instead of -1 "Noise")
-- [ ] Improve SQLite table selection UX (auto-select for single-table databases)
-- [ ] Disable cluster slider when no data loaded
-- [ ] Add error recovery guidance for common user issues
+**v1.2 Milestone Goals (Point Hover with Tag/Image Display):**
+- [ ] Point hover detection using distance threshold heuristic
+- [ ] Buffer-based communication (point index + depth, depth-based preferred)
+- [ ] Return screen position of hovered point for UI positioning
+- [ ] Display tag/image when point is hovered (Vue/TS side)
+- [ ] Support optional `tag` and `image` columns in data (JSON/SQLite)
+- [ ] Silently skip display if tag/image missing
+- [ ] Maintain 45 FPS @ 30M points performance
 
 ### Out of Scope
 
@@ -118,4 +119,4 @@ Known issues: None critical. Minor UX debt tracked for v1.1 (highlightedCluster 
 | Two-step error handling (console + UI) | Technical details in console for debugging, brief messages for users | ✓ Good — Implemented in Phase 2/3 with error panel (Phase 4) |
 
 ---
- *Last updated: 2026-02-04 after v1.1 milestone started*
+ *Last updated: 2026-02-04 after v1.2 milestone started*
