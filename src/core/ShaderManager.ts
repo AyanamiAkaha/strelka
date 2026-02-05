@@ -198,7 +198,7 @@ export class ShaderManager {
           float distToCamera = length(u_cameraPosition - position);
           bool cameraNear = distToCamera < u_cameraDistThreshold;
 
-          float distToCursor = length(u_cursorWorldPos - position);
+          float distToCursor = length(vec3(u_cursorWorldPos, 0.0) - position);
           bool cursorNear = distToCursor < u_cursorDistThreshold;
 
           // Combined: Both conditions must be true
