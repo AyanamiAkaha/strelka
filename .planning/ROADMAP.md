@@ -28,13 +28,14 @@ WebGL Clusters Playground — 3D point cloud visualization with data loading, ca
 
 </details>
 
-### ✅ v1.2 Point Hover with Tag/Image Display (Complete)
+### ✅ v1.2 Point Hover with Tag/Image Display (In Progress)
 
 **Milestone Goal:** Enable users to hover over points to see associated tags and images via GPU-based detection and screen-space overlay.
 
 - [x] Phase 9: Data Foundation (1 plan) — completed 2026-02-05
 - [x] Phase 10: GPU Hover Detection (3 plans) — completed 2026-02-05
 - [x] Phase 11: Screen Overlay (4 plans) — completed 2026-02-05
+- [ ] Phase 12: Fix v1.2 Integration Bugs (1 plan) — in progress
 
 ## Phase Details
 
@@ -102,10 +103,27 @@ See `.planning/milestones/v1-ROADMAP.md` for complete v1 phase details.
 - [x] 11-03-PLAN.md — Create Vue overlay component with tag/image display and edge clamping — completed 2026-02-05
 - [x] 11-04-PLAN.md — Dynamic overlay dimension calculation with transform-aware clamping — completed 2026-02-05
 
+### Phase 12: Fix v1.2 Integration Bugs
+
+**Goal**: Fix critical bugs identified in milestone audit that prevent end-to-end flows from working correctly
+
+**Depends on**: Phase 11
+
+**Gap Closure**: Closes integration and flow gaps from v1.2-MILESTONE-AUDIT.md
+
+**Success Criteria** (what must be TRUE):
+1. JSON data loading calculates hover thresholds without ReferenceError
+2. Shader receives correct cursor world position with all 3 components (x, y, z)
+3. Edge clamping preserves 15px gap between overlay and point for all screen positions
+4. All 3 E2E flows work correctly: JSON with tag, SQLite with image, no metadata
+
+**Plans**: 1 plan
+- [ ] 12-01-PLAN.md — Fix integration bugs (JSON loading, shader uniform, edge clamping, cleanup) — pending
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11
+Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -121,5 +139,6 @@ Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4 → 5 → 6 → 7 �
 | 9. Data Foundation | v1.2 | 1/1 | Complete | 2026-02-05 |
 | 10. GPU Hover Detection | v1.2 | 3/3 | Complete | 2026-02-05 |
 | 11. Screen Overlay | v1.2 | 4/4 | Complete | 2026-02-05 |
+| | 12. Fix v1.2 Integration Bugs | v1.2 | 0/1 | Pending | — |
 
-**Milestone Progress:** v1 ✅ Complete | v1.2 ✅ Complete - ready for audit
+**Milestone Progress:** v1 ✅ Complete | v1.2 In Progress - gap closure phase added
