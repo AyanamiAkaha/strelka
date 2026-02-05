@@ -26,6 +26,7 @@
     />
 
     <PointOverlay
+      ref="overlayRef"
       v-if="overlayVisible"
       :tag="hoveredPointTag"
       :image="hoveredPointImage"
@@ -160,6 +161,9 @@ const overlayScreenPos = ref({x: 0, y: 0})
 
 // Computed: overlay visible only when has metadata
 const overlayVisible = computed(() => hoveredPointTag.value !== null || hoveredPointImage.value !== null)
+
+// Template ref for PointOverlay component to measure dimensions
+const overlayRef = ref<InstanceType<typeof PointOverlay> | null>(null)
 
 watch(ppc, () => regenPoints())
 
@@ -554,11 +558,14 @@ const startRenderLoop = () => {
             );
 
             if (screenPos) {
-              // Define max overlay dimensions based on CSS
-              // CSS: image 100x100px, padding 12px, min-width 80px, tag badge variable
-              // Conservative estimates: width=140px, height=160px
-              const overlayWidth = 140;
-              const overlayHeight = 160;
+              // Measure actual overlay dimensions from DOM
+              const dims = getOverlayDimensions(overlayRef);
+              if (!dims) {
+                overlayScreenPos.value = { x: 0, y: 0 };
+                return;
+              }
+              const overlayWidth = dims.width;
+              const overlayHeight = dims.height;
 
               // Calculate position 15px above point
               const desiredX = screenPos.x;
@@ -570,9 +577,14 @@ const startRenderLoop = () => {
               const clampedX = Math.max(overlayWidth / 2, Math.min(desiredX, canvas.width - overlayWidth / 2));
 
               // Clamp Y to ensure overlay stays within vertical viewport bounds
-              // Minimum Y is overlayHeight (top of overlay at Y coordinate)
-              // Maximum Y is canvas.height - overlayHeight/2 (bottom stays in viewport)
-              const clampedY = Math.max(overlayHeight, Math.min(desiredY, canvas.height - overlayHeight / 2));
+              // Transform is translate(-50%, -100%):
+              // -50% X: center point at screenX
+              // -100% Y: position top edge at desiredY
+              // So visible area is: [desiredY - height, desiredY]
+              // Bottom of overlay is at: desiredY - height
+              // Minimum Y must be overlayHeight (top at 0)
+              // Maximum Y must be canvas.height (bottom at canvas.height)
+              const clampedY = Math.max(overlayHeight, Math.min(desiredY, canvas.height));
 
               overlayScreenPos.value = { x: clampedX, y: clampedY };
             } else {
@@ -585,6 +597,28 @@ const startRenderLoop = () => {
       }
 
       // Update FPS counter
+
+/**
+ * Measure overlay dimensions from template ref
+ *
+ * Returns actual rendered dimensions of the PointOverlay component.
+ * Returns null if overlay is not mounted yet.
+ *
+ * @param overlayRef - Ref to PointOverlay component instance
+ * @returns Object with width/height, or null if not available
+ */
+function getOverlayDimensions(overlayRef: Ref<InstanceType<typeof PointOverlay> | null>): {width: number, height: number} | null {
+  if (!overlayRef.value) return null;
+
+  // Access the exposed overlayRef from component instance
+  const element = overlayRef.value.overlayRef?.value;
+  if (!element) return null;
+
+  const rect = element.getBoundingClientRect();
+  return { width: rect.width, height: rect.height };
+}
+
+
       fpsCounter++
       if (timestamp - lastFpsTime >= 1000) {
         fps.value = Math.round((fpsCounter * 1000) / (timestamp - lastFpsTime))
