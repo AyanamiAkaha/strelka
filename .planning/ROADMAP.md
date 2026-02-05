@@ -33,8 +33,8 @@ WebGL Clusters Playground — 3D point cloud visualization with data loading, ca
 **Milestone Goal:** Enable users to hover over points to see associated tags and images via GPU-based detection and screen-space overlay.
 
 - [x] Phase 9: Data Foundation (1 plan) — completed 2026-02-05
-- [ ] Phase 10: GPU Hover Detection ([N] plans)
-- [ ] Phase 11: Screen Overlay ([N] plans)
+- [x] Phase 10: GPU Hover Detection (3 plans) — completed 2026-02-05
+- [ ] Phase 11: Screen Overlay (3 plans) — in progress (2/3 complete)
 
 ## Phase Details
 
@@ -68,7 +68,7 @@ See `.planning/milestones/v1-ROADMAP.md` for complete v1 phase details.
 
 **Depends on**: Phase 9
 
-**Requirements**: HOVER-01, HOVER-02
+**Requirements**: HOVER-01, HOVER-02, HOVER-03
 
 **Success Criteria** (what must be TRUE):
 1. User can move cursor over point cloud and the nearest point is detected and identified
@@ -77,9 +77,9 @@ See `.planning/milestones/v1-ROADMAP.md` for complete v1 phase details.
 4. Threshold is calculated in JavaScript/TypeScript and passed to shader (not recalculated in shader)
 
 **Plans**: 3 plans
-- [ ] 10-01-PLAN.md — Extend shaders for hover detection (uniforms, vertex/fragment logic)
-- [ ] 10-02-PLAN.md — Add mouse tracking and screen-to-world coordinate conversion
-- [ ] 10-03-PLAN.md — Implement density-based thresholds and render loop integration
+- [x] 10-01-PLAN.md — Extend shaders for hover detection (uniforms, vertex/fragment logic) — completed 2026-02-05
+- [x] 10-02-PLAN.md — Add mouse tracking and screen-to-world coordinate conversion — completed 2026-02-05
+- [x] 10-03-PLAN.md — Implement density-based thresholds and render loop integration — completed 2026-02-05
 
 ### Phase 11: Screen Overlay
 
@@ -97,8 +97,8 @@ See `.planning/milestones/v1-ROADMAP.md` for complete v1 phase details.
 5. (Optional) Overlay clamps to viewport edges to avoid clipping when point is near screen edge
 
 **Plans**: 3 plans
-- [x] 11-01-PLAN.md — Add CPU-side hovered point identification and metadata retrieval
-- [ ] 11-02-PLAN.md — Add world-to-screen projection to Camera class
+- [x] 11-01-PLAN.md — Add CPU-side hovered point identification and metadata retrieval — completed 2026-02-05
+- [x] 11-02-PLAN.md — Add world-to-screen projection to Camera class — completed 2026-02-05
 - [ ] 11-03-PLAN.md — Create Vue overlay component with tag/image display and edge clamping
 
 ## Progress
@@ -119,6 +119,6 @@ Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4 → 5 → 6 → 7 �
 | 8. Highlighted Cluster Selector | v1 | 1/1 | Complete | 2026-02-04 |
 | 9. Data Foundation | v1.2 | 1/1 | Complete | 2026-02-05 |
 | 10. GPU Hover Detection | v1.2 | 3/3 | Complete | 2026-02-05 |
-| 11. Screen Overlay | v1.2 | 1/3 | In progress | 2026-02-05 |
+| 11. Screen Overlay | v1.2 | 2/3 | In progress | 2026-02-05 |
 
-**Milestone Progress:** v1 ✅ Complete | v1.2 🚧 Phase 10 complete, Phase 11 in progress (1/3 complete)
+**Milestone Progress:** v1 ✅ Complete | v1.2 🚧 Phase 10 complete, Phase 11 in progress (2/3 complete)

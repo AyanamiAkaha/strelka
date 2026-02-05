@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 ## Current Position
 
 Phase: 11 of 11 (Screen Overlay)
-Plan: 1/3
+Plan: 2/3
 Status: In progress
-Last activity: 2026-02-05 — Completed 11-01: CPU-side hovered point identification
+Last activity: 2026-02-05 — Completed 11-02: World-to-screen projection method
 
-Progress: [████████████████████████░░░░░░] 86% (31/36 plans complete)
+Progress: [█████████████████████████░░░░░] 89% (32/36 plans complete)
 
 ## Performance Metrics
 
@@ -61,6 +61,7 @@ v1.2 Milestone Decisions:
 - Phase 10-02: Use simplified plane approximation (fixed distance) for screen-to-world conversion instead of full ray-plane intersection - adequate for hover detection reference plane
 - Phase 10-03: Use O(n) sampling approach (10,000 points max) for density calculation to avoid O(n^2) complexity; Cache thresholds after calculation - recalculate only when data source changes
 - Phase 11-01: Use iterative reverse lookup for Map (O(n) per lookup) - acceptable for low unique values count
+- Phase 11-02: Use Camera.getShaderUniforms() MVP matrix for world-to-screen conversion - ensures overlay uses same transformation as point rendering
 - v1.2 in progress: Point Hover with Tag/Image Display milestone
   - Phase 9: Data Foundation (DATA-01, DATA-02, DATA-03) - Extend types and loaders for optional tag/image columns - Complete
   - Phase 10: GPU Hover Detection (HOVER-01, HOVER-02, HOVER-03) - GPU-based distance threshold with adaptive threshold from JS - Complete
@@ -69,5 +70,5 @@ v1.2 Milestone Decisions:
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Completed 11-01-PLAN.md
+Stopped at: Completed 11-02-PLAN.md
 Resume file: None
