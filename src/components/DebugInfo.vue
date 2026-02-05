@@ -20,6 +20,7 @@
       <div>Hovered index: {{ hoverDebug.hoveredIndex }}</div>
       <div>Tag: <template v-if="hoverDebug.hoveredTag != null">{{ hoverDebug.hoveredTag }}</template><i v-else>null</i></div>
       <div>Image: <template v-if="hoverDebug.hoveredImage != null">{{ hoverDebug.hoveredImage }}</template><i v-else>null</i></div>
+      <img class="debug-image" v-if="hoverDebug.hoveredImage != null" :src="localImageSrc(hoverDebug.hoveredImage)" alt="Hovered image" />
       <div v-if="hoverDebug.hoveredPointWorld">
         Point world: {{ formatVector(hoverDebug.hoveredPointWorld) }}
       </div>
@@ -34,6 +35,7 @@
 </template>
 
 <script setup lang="ts">
+import { localImageSrc } from '@/utils/localImageUrl'
 /**
  * Debug display component for camera state and rendering metrics.
  * @see Camera.toDebugInfo() - Method providing debug position, rotation, and distance data
@@ -112,5 +114,12 @@ const formatRotation = (rot: { x: number, y: number }) => {
   margin: 0 0 6px 0;
   color: #81C784;
   font-size: 11px;
+}
+
+.debug-image {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  border-radius: 4px;
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <div ref="overlayRef" v-if="visible" class="point-overlay">
     <div class="overlay-content" :style="{ left: screenX + 'px', top: screenY + 'px' }">
-      <img v-if="hasImage" :src="imageUrl" alt="Point image" class="point-image" />
+      <img v-if="hasImage" :src="imageSrc" alt="Point image" class="point-image" />
       <span v-if="hasTag" class="tag-badge">{{ tag }}</span>
       <span v-if="!hasTag && !hasImage" class="point-fallback">Point{{ pointIndex >= 0 ? ` #${pointIndex}` : '' }}</span>
     </div>
@@ -10,6 +10,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { localImageSrc } from '@/utils/localImageUrl'
 
 interface Props {
   tag: string | null
@@ -32,8 +33,10 @@ defineExpose<{
 
 const hasTag = computed(() => props.tag !== null && props.tag !== '')
 const hasImage = computed(() => props.image !== null && props.image !== '')
-const imageUrl = computed(() => props.image || '')
 const tag = computed(() => props.tag || '')
+
+// file:// URLs are proxied via Vite dev server at /local-image so they load
+const imageSrc = computed(() => localImageSrc(props.image))
 </script>
 
 <style scoped>
@@ -49,7 +52,7 @@ const tag = computed(() => props.tag || '')
   transform: translate(-50%, -100%);
   width: 100px;
   height: 100px;
-  background: rgba(255, 255, 255, 0.95);
+  background: transparent;
   border-radius: 8px;
   padding: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -65,7 +68,7 @@ const tag = computed(() => props.tag || '')
   height: 100px;
   object-fit: contain;
   border-radius: 4px;
-  background: #f0f0f0;
+  background: transparent;
 }
 
 .tag-badge {
