@@ -1,5 +1,5 @@
 <template>
-  <div v-if="visible && (hasTag || hasImage)" class="point-overlay">
+  <div ref="overlayRef" v-if="visible && (hasTag || hasImage)" class="point-overlay">
     <div class="overlay-content" :style="{ left: screenX + 'px', top: screenY + 'px' }">
 
       <img v-if="hasImage" :src="imageUrl" alt="Point image" class="point-image" />
@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 interface Props {
   tag: string | null
@@ -21,6 +21,14 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Template ref for dynamic dimension measurement
+const overlayRef = ref<HTMLElement | null>(null)
+
+// Expose ref for parent to measure dimensions
+defineExpose<{
+  overlayRef: typeof overlayRef
+}>()
 
 const hasTag = computed(() => props.tag !== null && props.tag !== '')
 const hasImage = computed(() => props.image !== null && props.image !== '')
