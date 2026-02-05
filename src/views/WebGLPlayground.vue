@@ -559,12 +559,9 @@ const startRenderLoop = () => {
             if (screenPos) {
               // Measure actual overlay dimensions from DOM
               const dims = getOverlayDimensions(overlayRef);
-              if (!dims) {
-                overlayScreenPos.value = { x: 0, y: 0 };
-                return;
-              }
-              const overlayWidth = dims.width;
-              const overlayHeight = dims.height;
+              // Use fallback dimensions if overlay not available yet
+              const overlayWidth = dims?.width || 140;
+              const overlayHeight = dims?.height || 160;
 
               // Calculate position 15px above point
               const desiredX = screenPos.x;
