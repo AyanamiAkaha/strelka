@@ -211,8 +211,7 @@ const regenPoints = () => {
     pointCount.value = pointData.positions.length / 3
     setupBuffers(glCache)
 
-    // Calculate hover thresholds from point density
-    const thresholds = calculatePointDensityThresholds(pointData.positions, pointCount.value)
+    const thresholds = initialHoverThresholds(pointData.positions, pointCount.value)
     hoverThresholds.value = thresholds
 
     // Clear errors on successful data generation
@@ -237,8 +236,7 @@ const handleLoadFile = async (file: File, tableName?: string) => {
       pointCount.value = loadedData.positions.length / 3
       setupBuffers(glCache)
 
-      // Calculate hover thresholds from point density
-      const thresholds = calculatePointDensityThresholds(loadedData.positions, pointCount.value)
+      const thresholds = initialHoverThresholds(loadedData.positions, pointCount.value)
       hoverThresholds.value = thresholds
     } else if (file.name.endsWith('.db') || file.name.endsWith('.sqlite')) {
       // GUARD: Don't load without tableName
@@ -253,8 +251,7 @@ const handleLoadFile = async (file: File, tableName?: string) => {
       pointCount.value = result.pointData.positions.length / 3
       setupBuffers(glCache)
 
-      // Calculate hover thresholds from point density
-      const thresholds = calculatePointDensityThresholds(result.pointData.positions, pointCount.value)
+      const thresholds = initialHoverThresholds(result.pointData.positions, pointCount.value)
       hoverThresholds.value = thresholds
     }
 
@@ -279,63 +276,44 @@ const handleTableSelected = (tableName: string) => {
   }
 }
 
+/** Scroll step multiplier for camera distance threshold (world units). */
+const CAMERA_THRESHOLD_SCROLL_FACTOR = 1.15
+const CAMERA_THRESHOLD_MIN = 0.5
+const CAMERA_THRESHOLD_MAX = 5000
+/** Cursor distance is in pixels; fixed, matches shader and getClosestPoint. */
+const CURSOR_DIST_THRESHOLD_PX = 30
+
 /**
- * Calculate hover detection thresholds based on point density
- *
- * Samples subset of points to estimate average spacing, then derives thresholds.
- * Camera threshold: point must be within 5x avg spacing of camera.
- * Cursor threshold: point must be within 1.5x avg spacing of cursor.
- * 
- * FIXME: this is shitty LLM-generated code that needs total rewrite (assumptions totally wrong)
- *
- * @param positions - Float32Array of point positions (x,y,z interleaved)
- * @param count - Number of points
- * @returns Thresholds for camera and cursor distance
+ * Initial hover thresholds from data bounds (one pass, no sampling).
+ * Camera threshold = fraction of scene diagonal so a reasonable volume is selectable.
+ * Scroll wheel adjusts camera threshold at runtime.
  */
-function calculatePointDensityThresholds(positions: Float32Array, count: number): {
-  cameraDistThreshold: number,
+function initialHoverThresholds(positions: Float32Array, count: number): {
+  cameraDistThreshold: number
   cursorDistThreshold: number
 } {
-  // Sample subset of points (avoid O(n^2) with large datasets)
-  const SAMPLE_SIZE = Math.min(10000, count);
-
-  let totalNeighborDist = 0;
-  let sampleCount = 0;
-
-  // Sample points uniformly
-  for (let i = 0; i < SAMPLE_SIZE; i += 100) {
-    const idx = Math.floor(Math.random() * (count / 3)) * 3;
-    const p1x = positions[idx];
-    const p1y = positions[idx + 1];
-    const p1z = positions[idx + 2];
-
-    // Find nearest neighbor (simplified O(n) scan within sample)
-    let minDist = Infinity;
-    for (let j = 0; j < SAMPLE_SIZE && j < idx; j += 3) {
-      const dx = positions[j] - p1x;
-      const dy = positions[j + 1] - p1y;
-      const dz = positions[j + 2] - p1z;
-      const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-      if (dist > 0 && dist < minDist) {
-        minDist = dist;
-      }
-    }
-
-    if (minDist !== Infinity) {
-      totalNeighborDist += minDist;
-      sampleCount++;
-    }
+  if (count === 0) {
+    return { cameraDistThreshold: 50, cursorDistThreshold: CURSOR_DIST_THRESHOLD_PX }
   }
-
-  // Average nearest neighbor distance as density measure
-  const avgSpacing = sampleCount > 0 ? totalNeighborDist / sampleCount : 1.0;
-
-  // Thresholds: use point spacing as baseline
-  const cameraDistThreshold = avgSpacing * 5.0;  // Camera must be within 5x avg spacing
-  const cursorDistThreshold = avgSpacing * 1.5;  // Cursor must be within 1.5x avg spacing
-
-  return { cameraDistThreshold, cursorDistThreshold };
+  let minX = Infinity, minY = Infinity, minZ = Infinity
+  let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity
+  for (let i = 0; i < count; i++) {
+    const x = positions[i * 3]
+    const y = positions[i * 3 + 1]
+    const z = positions[i * 3 + 2]
+    if (x < minX) minX = x
+    if (x > maxX) maxX = x
+    if (y < minY) minY = y
+    if (y > maxY) maxY = y
+    if (z < minZ) minZ = z
+    if (z > maxZ) maxZ = z
+  }
+  const dx = maxX - minX || 1
+  const dy = maxY - minY || 1
+  const dz = maxZ - minZ || 1
+  const diagonal = Math.sqrt(dx * dx + dy * dy + dz * dz)
+  const cameraDistThreshold = Math.max(CAMERA_THRESHOLD_MIN, Math.min(CAMERA_THRESHOLD_MAX, diagonal * 0.08))
+  return { cameraDistThreshold, cursorDistThreshold: CURSOR_DIST_THRESHOLD_PX }
 }
 
 const switchToGenerated = async () => {
@@ -433,8 +411,13 @@ const onMouseMove = (event: { deltaX: number, deltaY: number, buttons: number, c
 }
 
 const onMouseWheel = (delta: number) => {
-  if (camera.value) {
-    camera.value.handleMouseWheel(delta)
+  if (hoverThresholds.value) {
+    const factor = delta > 0 ? CAMERA_THRESHOLD_SCROLL_FACTOR : 1 / CAMERA_THRESHOLD_SCROLL_FACTOR
+    const next = hoverThresholds.value.cameraDistThreshold * factor
+    hoverThresholds.value = {
+      ...hoverThresholds.value,
+      cameraDistThreshold: Math.max(CAMERA_THRESHOLD_MIN, Math.min(CAMERA_THRESHOLD_MAX, next))
+    }
   }
 }
 

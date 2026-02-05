@@ -52,8 +52,6 @@ export class Camera {
   public fastMoveMultiplier: number = 3.0
   /** Mouse rotation sensitivity */
   public mouseSensitivity: number = 0.0014  // Reduced from 0.002 to match original speed (~30% slower)
-  /** Mouse wheel zoom speed */
-  public zoomSpeed: number = 0.1
   
   // Projection settings
   /** Vertical field of view in degrees */
@@ -239,14 +237,10 @@ export class Camera {
   }
 
   /**
-   * Handle mouse wheel for zooming
-   *
-   * @param delta - Mouse wheel scroll delta (positive = zoom in, negative = zoom out)
-   * @returns void
+   * Mouse wheel is no longer used for zoom (handled by playground for threshold adjustment).
    */
-  handleMouseWheel(delta: number): void {
-    this.distance += delta * this.zoomSpeed
-    this.distance = Math.max(1, Math.min(50, this.distance))
+  handleMouseWheel(_delta: number): void {
+    // no-op
   }
 
   /**
