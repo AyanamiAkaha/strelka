@@ -24,7 +24,16 @@
       :point-count="pointCount"
       :fps="fps"
     />
-    
+
+    <PointOverlay
+      v-if="overlayVisible"
+      :tag="hoveredPointTag"
+      :image="hoveredPointImage"
+      :screen-x="overlayScreenPos.x"
+      :screen-y="overlayScreenPos.y"
+      :visible="overlayVisible"
+    />
+
     <div v-if="error" class="error-overlay">
       <h3>WebGL Error</h3>
       <p>{{ error }}</p>
@@ -54,10 +63,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import WebGLCanvas from '@/components/WebGLCanvas.vue'
 import ControlsOverlay from '@/components/ControlsOverlay.vue'
 import DebugInfo from '@/components/DebugInfo.vue'
+import PointOverlay from '@/components/PointOverlay.vue'
 import { Camera } from '@/core/Camera'
 import { DataProvider, PointData } from '@/core/DataProvider'
 import { ShaderManager } from '@/core/ShaderManager'
@@ -144,6 +154,12 @@ const hoverThresholds = ref<{cameraDistThreshold: number, cursorDistThreshold: n
 const hoveredPointIndex = ref(-1)
 const hoveredPointTag = ref<string | null>(null)
 const hoveredPointImage = ref<string | null>(null)
+
+// Screen position for overlay with edge clamping
+const overlayScreenPos = ref({x: 0, y: 0})
+
+// Computed: overlay visible only when has metadata
+const overlayVisible = computed(() => hoveredPointTag.value !== null || hoveredPointImage.value !== null)
 
 watch(ppc, () => regenPoints())
 
@@ -516,6 +532,55 @@ const startRenderLoop = () => {
           if (idx >= 0) {
             console.log('Hovered point:', idx, 'tag:', hoveredPointTag.value, 'image:', hoveredPointImage.value)
           }
+        }
+
+        // Calculate overlay screen position with edge clamping
+        if (hoveredPointIndex.value >= 0 && pointData && camera.value && canvasRef.value) {
+          const canvas = canvasRef.value.canvasElement;
+          if (canvas) {
+            // Get world position of hovered point
+            const pointIdx = hoveredPointIndex.value * 3;
+            const worldPos = {
+              x: pointData.positions[pointIdx],
+              y: pointData.positions[pointIdx + 1],
+              z: pointData.positions[pointIdx + 2]
+            };
+
+            // Convert world to screen coordinates
+            const screenPos = camera.value.worldToScreen(
+              worldPos,
+              canvas.width,
+              canvas.height
+            );
+
+            if (screenPos) {
+              // Define max overlay dimensions based on CSS
+              // CSS: image 100x100px, padding 12px, min-width 80px, tag badge variable
+              // Conservative estimates: width=140px, height=160px
+              const overlayWidth = 140;
+              const overlayHeight = 160;
+
+              // Calculate position 15px above point
+              const desiredX = screenPos.x;
+              const desiredY = screenPos.y - 15;
+
+              // Clamp X to ensure overlay stays within horizontal viewport bounds
+              // Because overlay uses transform: translate(-50%, -100%),
+              // x=0 positions center at left edge, so we need margin of overlayWidth/2
+              const clampedX = Math.max(overlayWidth / 2, Math.min(desiredX, canvas.width - overlayWidth / 2));
+
+              // Clamp Y to ensure overlay stays within vertical viewport bounds
+              // Minimum Y is overlayHeight (top of overlay at Y coordinate)
+              // Maximum Y is canvas.height - overlayHeight/2 (bottom stays in viewport)
+              const clampedY = Math.max(overlayHeight, Math.min(desiredY, canvas.height - overlayHeight / 2));
+
+              overlayScreenPos.value = { x: clampedX, y: clampedY };
+            } else {
+              overlayScreenPos.value = { x: 0, y: 0 };
+            }
+          }
+        } else {
+          overlayScreenPos.value = { x: 0, y: 0 };
         }
       }
 
