@@ -664,11 +664,12 @@ function getOverlayDimensions(overlayRef: Ref<InstanceType<typeof PointOverlay> 
               )
 
               // Pass cursor world position to shader
-              gl.uniform3f(
+              // Note: Shader uses vec2 uniform (x,y) with z implicitly 0
+              // This is sufficient for hover detection on the z=0 plane
+              gl.uniform2f(
                 gl.getUniformLocation(shaderProgram, 'u_cursorWorldPos'),
                 worldPos.x,
-                worldPos.y,
-                worldPos.z
+                worldPos.y
               )
 
               // Pass distance thresholds to shader

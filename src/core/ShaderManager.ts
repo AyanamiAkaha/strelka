@@ -174,7 +174,7 @@ export class ShaderManager {
         uniform float u_hilighted_cluster;
 
         // Hover detection uniforms
-        uniform vec3 u_cursorWorldPos;
+        uniform vec2 u_cursorWorldPos;
         uniform float u_cameraDistThreshold;
         uniform float u_cursorDistThreshold;
 
