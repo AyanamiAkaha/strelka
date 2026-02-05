@@ -455,7 +455,70 @@ const startRenderLoop = () => {
     if (canvasRef.value && camera.value) {
       // Update camera
       camera.value.update()
-      
+
+      // Update hovered point state (CPU-side identification)
+      if (hoverThresholds.value && pointData) {
+        const canvas = canvasRef.value.canvasElement
+        if (canvas && camera.value) {
+          const aspect = canvas.width / canvas.height
+          const uniforms = camera.value.getShaderUniforms(aspect)
+          const cameraPos = uniforms.u_cameraPosition
+
+          // Convert mouse to world space
+          const worldPos = camera.value.convertMouseToWorld(
+            lastMouseX.value,
+            lastMouseY.value,
+            canvas.width,
+            canvas.height
+          )
+
+          // Find hovered point index
+          const idx = findHoveredPointIndex(
+            pointData,
+            cameraPos,
+            worldPos,
+            hoverThresholds.value.cameraDistThreshold,
+            hoverThresholds.value.cursorDistThreshold
+          )
+
+          // Update hovered point index
+          hoveredPointIndex.value = idx
+
+          // Reverse lookup for tag metadata (Map<string, number> -> find string by index)
+          hoveredPointTag.value = null
+          if (idx >= 0 && pointData.tagLookup && pointData.tagIndices) {
+            const tagIndex = pointData.tagIndices[idx]
+            if (tagIndex >= 0) {
+              for (const [tag, index] of pointData.tagLookup.entries()) {
+                if (index === tagIndex) {
+                  hoveredPointTag.value = tag
+                  break
+                }
+              }
+            }
+          }
+
+          // Reverse lookup for image metadata (Map<string, number> -> find string by index)
+          hoveredPointImage.value = null
+          if (idx >= 0 && pointData.imageLookup && pointData.imageIndices) {
+            const imageIndex = pointData.imageIndices[idx]
+            if (imageIndex >= 0) {
+              for (const [image, index] of pointData.imageLookup.entries()) {
+                if (index === imageIndex) {
+                  hoveredPointImage.value = image
+                  break
+                }
+              }
+            }
+          }
+
+          // Log hover state for debugging (verifies CPU-side tracking works)
+          if (idx >= 0) {
+            console.log('Hovered point:', idx, 'tag:', hoveredPointTag.value, 'image:', hoveredPointImage.value)
+          }
+        }
+      }
+
       // Update FPS counter
       fpsCounter++
       if (timestamp - lastFpsTime >= 1000) {
