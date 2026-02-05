@@ -1,10 +1,9 @@
 <template>
-  <div ref="overlayRef" v-if="visible && (hasTag || hasImage)" class="point-overlay">
+  <div ref="overlayRef" v-if="visible" class="point-overlay">
     <div class="overlay-content" :style="{ left: screenX + 'px', top: screenY + 'px' }">
-
       <img v-if="hasImage" :src="imageUrl" alt="Point image" class="point-image" />
-
       <span v-if="hasTag" class="tag-badge">{{ tag }}</span>
+      <span v-if="!hasTag && !hasImage" class="point-fallback">Point{{ pointIndex >= 0 ? ` #${pointIndex}` : '' }}</span>
     </div>
   </div>
 </template>
@@ -15,12 +14,13 @@ import { computed, ref } from 'vue'
 interface Props {
   tag: string | null
   image: string | null
+  pointIndex?: number
   screenX: number
   screenY: number
   visible: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), { pointIndex: -1 })
 
 // Template ref for dynamic dimension measurement
 const overlayRef = ref<HTMLElement | null>(null)
@@ -39,13 +39,16 @@ const tag = computed(() => props.tag || '')
 <style scoped>
 .point-overlay {
   position: absolute;
+  inset: 0;
   pointer-events: none;
-  z-index: 50;
+  z-index: 150;
 }
 
 .overlay-content {
   position: absolute;
   transform: translate(-50%, -100%);
+  width: 100px;
+  height: 100px;
   background: rgba(255, 255, 255, 0.95);
   border-radius: 8px;
   padding: 12px;
@@ -75,5 +78,11 @@ const tag = computed(() => props.tag || '')
   font-family: monospace;
   white-space: nowrap;
   font-weight: 600;
+}
+
+.point-fallback {
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
 }
 </style>

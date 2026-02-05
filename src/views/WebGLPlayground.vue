@@ -1,5 +1,5 @@
 <template>
-  <div class="webgl-container">
+  <div ref="containerRef" class="webgl-container">
     <WebGLCanvas
       ref="canvasRef"
       @webgl-ready="onWebGLReady"
@@ -31,6 +31,7 @@
       v-if="overlayVisible"
       :tag="hoveredPointTag"
       :image="hoveredPointImage"
+      :point-index="hoveredPointIndex"
       :screen-x="overlayScreenPos.x"
       :screen-y="overlayScreenPos.y"
       :visible="overlayVisible"
@@ -88,6 +89,7 @@ interface ErrorInfo {
  * Main WebGL rendering component with camera controls for 3D point visualization.
  * @see Camera - Quaternion-based camera with Y-up coordinate system documentation
  */
+const containerRef = ref<HTMLElement | null>(null)
 const canvasRef = ref<InstanceType<typeof WebGLCanvas>>()
 const error = ref<string>('')
 const camera = ref<Camera>()
@@ -183,8 +185,8 @@ const hoverDebug = ref<HoverDebugInfo>({
   distToCamera: null
 })
 
-// Computed: overlay visible only when has metadata
-const overlayVisible = computed(() => hoveredPointTag.value !== null || hoveredPointImage.value !== null)
+// Computed: overlay visible when any point is hovered (tag/image shown when present)
+const overlayVisible = computed(() => hoveredPointIndex.value >= 0)
 
 // Template ref for PointOverlay component to measure dimensions
 const overlayRef = ref<InstanceType<typeof PointOverlay> | null>(null)
@@ -545,58 +547,44 @@ const startRenderLoop = () => {
           }
         }
 
-        // Calculate overlay screen position with edge clamping
-        if (hoveredPointIndex.value >= 0 && pointData && camera.value && canvasRef.value) {
-          const canvas = canvasRef.value.canvasElement;
+        // Calculate overlay screen position: canvas logical -> container-relative pixels (with edge clamping)
+        if (hoveredPointIndex.value >= 0 && pointData && camera.value && canvasRef.value && containerRef.value) {
+          const canvas = canvasRef.value.canvasElement
           if (canvas) {
-            // Get world position of hovered point
-            const pointIdx = hoveredPointIndex.value * 3;
+            const pointIdx = hoveredPointIndex.value * 3
             const worldPos = {
               x: pointData.positions[pointIdx],
               y: pointData.positions[pointIdx + 1],
               z: pointData.positions[pointIdx + 2]
-            };
-
-            // Convert world to screen coordinates
-            const screenPos = camera.value.worldToScreen(
-              worldPos,
-              canvas.width,
-              canvas.height
-            );
+            }
+            const screenPos = camera.value.worldToScreen(worldPos, canvas.width, canvas.height)
 
             if (screenPos) {
-              // Measure actual overlay dimensions from DOM
-              const dims = getOverlayDimensions(overlayRef);
-              // Use fallback dimensions if overlay not available yet
-              const overlayWidth = dims?.width || 140;
-              const overlayHeight = dims?.height || 160;
+              const dims = getOverlayDimensions(overlayRef)
+              const overlayWidth = dims?.width || 140
+              const overlayHeight = dims?.height || 160
 
-              // Calculate position 15px above point
-              const desiredX = screenPos.x;
-              const desiredY = screenPos.y - 15;
+              // Desired position in canvas logical space (15px above point)
+              const desiredX = screenPos.x
+              const desiredY = screenPos.y - 15
+              const clampedX = Math.max(overlayWidth / 2, Math.min(desiredX, canvas.width - overlayWidth / 2))
+              const clampedY = Math.max(overlayHeight + 15, Math.min(desiredY, canvas.height))
 
-              // Clamp X to ensure overlay stays within horizontal viewport bounds
-              // Because overlay uses transform: translate(-50%, -100%),
-              // x=0 positions center at left edge, so we need margin of overlayWidth/2
-              const clampedX = Math.max(overlayWidth / 2, Math.min(desiredX, canvas.width - overlayWidth / 2));
+              // Convert to container-relative pixels so overlay appears over the canvas
+              const containerRect = containerRef.value.getBoundingClientRect()
+              const canvasRect = canvas.getBoundingClientRect()
+              const scaleX = canvasRect.width / canvas.width
+              const scaleY = canvasRect.height / canvas.height
+              const x = canvasRect.left - containerRect.left + clampedX * scaleX
+              const y = canvasRect.top - containerRect.top + clampedY * scaleY
 
-              // Clamp Y to ensure overlay stays within vertical viewport bounds
-              // Transform is translate(-50%, calc(-100% - 15px)):
-              // -50% X: center point at screenX
-              // calc(-100% - 15px) Y: position top edge at desiredY - 15px
-              // So visible area is: [desiredY - height - 15px, desiredY - 15px]
-              // Bottom of overlay is at: desiredY - height - 15px
-              // Minimum Y must be overlayHeight + 15 (top at 0 with 15px CSS offset)
-              // Maximum Y must be canvas.height (bottom at canvas.height)
-              const clampedY = Math.max(overlayHeight + 15, Math.min(desiredY, canvas.height));
-
-              overlayScreenPos.value = { x: clampedX, y: clampedY };
+              overlayScreenPos.value = { x, y }
             } else {
-              overlayScreenPos.value = { x: 0, y: 0 };
+              overlayScreenPos.value = { x: 0, y: 0 }
             }
           }
         } else {
-          overlayScreenPos.value = { x: 0, y: 0 };
+          overlayScreenPos.value = { x: 0, y: 0 }
         }
       }
 
