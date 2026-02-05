@@ -99,7 +99,7 @@ See `.planning/milestones/v1-ROADMAP.md` for complete v1 phase details.
 **Plans**: 3 plans
 - [ ] 11-01-PLAN.md — Add CPU-side hovered point identification and metadata retrieval
 - [ ] 11-02-PLAN.md — Add world-to-screen projection to Camera class
-- [ ] 11-03-PLAN.md — Create Vue overlay component with tag/image display
+- [ ] 11-03-PLAN.md — Create Vue overlay component with tag/image display and edge clamping
 
 ## Progress
 
@@ -119,6 +119,6 @@ Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4 → 5 → 6 → 7 �
 | 8. Highlighted Cluster Selector | v1 | 1/1 | Complete | 2026-02-04 |
 | 9. Data Foundation | v1.2 | 1/1 | Complete | 2026-02-05 |
 | 10. GPU Hover Detection | v1.2 | 3/3 | Complete | 2026-02-05 |
-| 11. Screen Overlay | v1.2 | 0/0 | Ready to execute | - |
+ | 11. Screen Overlay | v1.2 | 3/3 | Ready to execute | - |
 
 **Milestone Progress:** v1 ✅ Complete | v1.2 🚧 Phase 10 complete, Phase 11 ready to execute
