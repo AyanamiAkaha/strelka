@@ -225,7 +225,6 @@ const handleLoadFile = async (file: File, tableName?: string) => {
       const result = await DataProvider.loadSqliteFile(file, tableName)
       pointData = result.pointData
       pointCount.value = result.pointData.positions.length / 3
-      console.log('Loaded point data from SQLite file:', pointData.positions.slice(0, 10), '...; total points:', pointCount.value),
       setupBuffers(glCache)
 
       // Calculate hover thresholds from point density
