@@ -577,14 +577,14 @@ const startRenderLoop = () => {
               const clampedX = Math.max(overlayWidth / 2, Math.min(desiredX, canvas.width - overlayWidth / 2));
 
               // Clamp Y to ensure overlay stays within vertical viewport bounds
-              // Transform is translate(-50%, -100%):
+              // Transform is translate(-50%, calc(-100% - 15px)):
               // -50% X: center point at screenX
-              // -100% Y: position top edge at desiredY
-              // So visible area is: [desiredY - height, desiredY]
-              // Bottom of overlay is at: desiredY - height
-              // Minimum Y must be overlayHeight (top at 0)
+              // calc(-100% - 15px) Y: position top edge at desiredY - 15px
+              // So visible area is: [desiredY - height - 15px, desiredY - 15px]
+              // Bottom of overlay is at: desiredY - height - 15px
+              // Minimum Y must be overlayHeight + 15 (top at 0 with 15px CSS offset)
               // Maximum Y must be canvas.height (bottom at canvas.height)
-              const clampedY = Math.max(overlayHeight, Math.min(desiredY, canvas.height));
+              const clampedY = Math.max(overlayHeight + 15, Math.min(desiredY, canvas.height));
 
               overlayScreenPos.value = { x: clampedX, y: clampedY };
             } else {
