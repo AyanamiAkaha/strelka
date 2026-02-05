@@ -101,40 +101,6 @@ export class Camera {
   }
 
   /**
-   * Convert mouse screen position to world space (simplified plane approximation)
-   *
-   * Projects mouse ray to a plane at camera distance for approximate world position.
-   * This is sufficient for hover detection where exact world position is not critical.
-   *
-   * @param mouseX - Mouse X coordinate in pixels (from event.clientX)
-   * @param mouseY - Mouse Y coordinate in pixels (from event.clientY)
-   * @param canvasWidth - Canvas width in pixels
-   * @param canvasHeight - Canvas height in pixels
-   * @returns World position {x, y, z}
-   */
-  convertMouseToWorld(mouseX: number, mouseY: number, canvasWidth: number, canvasHeight: number): {x: number, y: number, z: number} {
-    // Normalize mouse to NDC (-1 to 1), flip Y (screen Y is down, WebGL Y is up)
-    const ndcX = (mouseX / canvasWidth) * 2.0 - 1.0;
-    const ndcY = -((mouseY / canvasHeight) * 2.0 - 1.0);
-
-    // Get forward vector from camera orientation
-    const forward = vec3.create();
-    vec3.set(forward, 0, 0, -1);
-    vec3.transformQuat(forward, forward, this.orientation);
-    vec3.normalize(forward, forward);
-
-    // Simple approximation: project point on plane at camera distance (10 units)
-    // This works for hover detection because we only need a reference plane,
-    // not the exact world intersection point
-    const distanceToPlane = 10.0;
-    const worldX = this.position[0] + forward[0] * distanceToPlane * ndcX;
-    const worldY = this.position[1] + forward[1] * distanceToPlane * ndcY;
-    const worldZ = this.position[2] + forward[2] * distanceToPlane;
-
-    return { x: worldX, y: worldY, z: worldZ };
-  }
-
-  /**
    * Handle keyboard input
    *
    * @param key - Keyboard key code

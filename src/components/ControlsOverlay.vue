@@ -69,13 +69,24 @@
       <input type="range" id="slider-nclusters" name="nclusters" min="1" max="5" v-model="nclusters" />
       <label for="slider-nclusters">number of clusters</label>
       -->
+      
+      <div class="image-path-control">
+        <h5>Image Path Base</h5>
+        <input
+          type="text"
+          v-model="imagePathBase"
+          placeholder="Optional base path for images"
+          class="path-input"
+        />
+        <div class="path-hint">Optional base path for displayed images</div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import { highlightedCluster, ppc } from '@/composables/settings'
+import { highlightedCluster, ppc, imagePathBase } from '@/composables/settings'
 import { type PointData } from '@/core/DataProvider'
 import DataLoadControl from './DataLoadControl.vue'
 
@@ -252,5 +263,42 @@ const clusterDisplayValue = computed(() => {
 }
 .cluster-display[data-value^="Cluster"] {
   color: #4CAF50;  /* Green for clusters */
+}
+
+.image-path-control {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.image-path-control h5 {
+  margin: 0 0 6px 0;
+  color: #4CAF50;
+  font-size: 11px;
+  font-family: monospace;
+}
+
+.path-input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid #4CAF50;
+  color: white;
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: monospace;
+  margin-bottom: 6px;
+  box-sizing: border-box;
+}
+
+.path-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.path-hint {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 10px;
+  font-family: monospace;
+  font-style: italic;
 }
 </style>

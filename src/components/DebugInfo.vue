@@ -8,6 +8,26 @@
       <div>Rot: {{ formatRotation(camera.rotation) }}</div>
       <div>Zoom: {{ camera.distance.toFixed(1) }}</div>
     </div>
+    <div v-if="hoverDebug" class="hover-debug">
+      <h5>Cursor / Hover</h5>
+      <div>Screen: ({{ hoverDebug.cursorScreen.x }}, {{ hoverDebug.cursorScreen.y }})</div>
+      <div v-if="hoverDebug.cursorGLScreen">
+        Cursor GL screen: {{ formatVector(hoverDebug.cursorGLScreen) }}
+      </div>
+      <div v-if="hoverDebug.cursorDistThreshold != null">
+        Thresholds: cam {{ hoverDebug.cameraDistThreshold?.toFixed(3) }}, cursor {{ hoverDebug.cursorDistThreshold?.toFixed(3) }}
+      </div>
+      <div>Hovered index: {{ hoverDebug.hoveredIndex }}</div>
+      <div v-if="hoverDebug.hoveredPointWorld">
+        Point world: {{ formatVector(hoverDebug.hoveredPointWorld) }}
+      </div>
+      <div v-if="hoverDebug.distToCursor != null">
+        distToCursor: {{ hoverDebug.distToCursor.toFixed(4) }}
+      </div>
+      <div v-if="hoverDebug.distToCamera != null">
+        distToCamera: {{ hoverDebug.distToCamera.toFixed(4) }}
+      </div>
+    </div>
   </div>
 </template>
 
@@ -17,22 +37,35 @@
  * @see Camera.toDebugInfo() - Method providing debug position, rotation, and distance data
  * @see Camera - Camera class with Y-up coordinate system documentation
  */
-import { Vec3 } from '@/core/Math'
+interface HoverDebugInfo {
+  cursorScreen: { x: number, y: number }
+  cursorGLScreen: { x: number, y: number } | null
+  cameraDistThreshold: number | null
+  cursorDistThreshold: number | null
+  hoveredIndex: number
+  hoveredPointWorld: { x: number, y: number, z: number } | null
+  distToCursor: number | null
+  distToCamera: number | null
+}
 
 interface Props {
   camera?: {
-    position: Vec3
+    position: { x: number, y: number, z: number }
     rotation: { x: number, y: number }
     distance: number
   }
   pointCount: number
   fps: number
+  hoverDebug?: HoverDebugInfo | null
 }
 
 defineProps<Props>()
 
-const formatVector = (vec: Vec3) => {
-  return `(${vec.x.toFixed(2)}, ${vec.y.toFixed(2)}, ${vec.z.toFixed(2)})`
+const formatVector = (vec: { x: number, y: number, z?: number }) => {
+  if (vec.z) {
+    return `(${vec.x.toFixed(2)}, ${vec.y.toFixed(2)}, ${vec.z.toFixed(2)})`
+  }
+  return `(${vec.x.toFixed(2)}, ${vec.y.toFixed(2)})`
 }
 
 const formatRotation = (rot: { x: number, y: number }) => {
@@ -63,5 +96,17 @@ const formatRotation = (rot: { x: number, y: number }) => {
 
 .debug-info > div {
   margin-bottom: 4px;
+}
+
+.hover-debug {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.hover-debug h5 {
+  margin: 0 0 6px 0;
+  color: #81C784;
+  font-size: 11px;
 }
 </style>

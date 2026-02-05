@@ -23,6 +23,7 @@
       :camera="camera!.toDebugInfo()"
       :point-count="pointCount"
       :fps="fps"
+      :hover-debug="hoverDebug"
     />
 
     <PointOverlay
@@ -64,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed, type Ref } from 'vue'
 import WebGLCanvas from '@/components/WebGLCanvas.vue'
 import ControlsOverlay from '@/components/ControlsOverlay.vue'
 import DebugInfo from '@/components/DebugInfo.vue'
@@ -73,7 +74,7 @@ import { Camera } from '@/core/Camera'
 import { DataProvider, PointData } from '@/core/DataProvider'
 import { ShaderManager } from '@/core/ShaderManager'
 
-import { highlightedCluster, ppc } from '@/composables/settings'
+import { highlightedCluster, ppc, imagePathBase } from '@/composables/settings'
 
 console.log('WebGLPlayground script setup running...')
 
@@ -144,9 +145,6 @@ let pointData: PointData | null = null
 let shaderManager: ShaderManager | null = null
 let glCache: WebGL2RenderingContext | WebGLRenderingContext
 
-// Hover detection state
-const mouseX = ref(0)
-const mouseY = ref(0)
 const lastMouseX = ref(0)
 const lastMouseY = ref(0)
 const hoverThresholds = ref<{cameraDistThreshold: number, cursorDistThreshold: number} | null>(null)
@@ -158,6 +156,28 @@ const hoveredPointImage = ref<string | null>(null)
 
 // Screen position for overlay with edge clamping
 const overlayScreenPos = ref({x: 0, y: 0})
+
+// Hover/cursor debug values (updated each frame for DebugInfo)
+interface HoverDebugInfo {
+  cursorScreen: { x: number, y: number }
+  cursorGLScreen: { x: number, y: number } | null
+  cameraDistThreshold: number | null
+  cursorDistThreshold: number | null
+  hoveredIndex: number
+  hoveredPointWorld: { x: number, y: number, z: number } | null
+  distToCursor: number | null
+  distToCamera: number | null
+}
+const hoverDebug = ref<HoverDebugInfo>({
+  cursorScreen: { x: 0, y: 0 },
+  cursorGLScreen: null,
+  cameraDistThreshold: null,
+  cursorDistThreshold: null,
+  hoveredIndex: -1,
+  hoveredPointWorld: null,
+  distToCursor: null,
+  distToCamera: null
+})
 
 // Computed: overlay visible only when has metadata
 const overlayVisible = computed(() => hoveredPointTag.value !== null || hoveredPointImage.value !== null)
@@ -259,6 +279,8 @@ const handleTableSelected = (tableName: string) => {
  * Samples subset of points to estimate average spacing, then derives thresholds.
  * Camera threshold: point must be within 5x avg spacing of camera.
  * Cursor threshold: point must be within 1.5x avg spacing of cursor.
+ * 
+ * FIXME: this is shitty LLM-generated code that needs total rewrite (assumptions totally wrong)
  *
  * @param positions - Float32Array of point positions (x,y,z interleaved)
  * @param count - Number of points
@@ -270,7 +292,6 @@ function calculatePointDensityThresholds(positions: Float32Array, count: number)
 } {
   // Sample subset of points (avoid O(n^2) with large datasets)
   const SAMPLE_SIZE = Math.min(10000, count);
-  const stride = 3; // x, y, z
 
   let totalNeighborDist = 0;
   let sampleCount = 0;
@@ -309,60 +330,6 @@ function calculatePointDensityThresholds(positions: Float32Array, count: number)
   const cursorDistThreshold = avgSpacing * 1.5;  // Cursor must be within 1.5x avg spacing
 
   return { cameraDistThreshold, cursorDistThreshold };
-}
-
-/**
- * Find which point is hovered using same distance thresholds as shader
- *
- * CPU-side point selection that mirrors GPU hover detection logic.
- * Uses two-distance threshold: point must be within cameraDistThreshold AND cursorDistThreshold.
- *
- * @param pointData - Point data with positions array
- * @param cameraPos - Camera position in world space [x, y, z]
- * @param cursorWorldPos - Cursor position in world space {x, y, z}
- * @param cameraDistThreshold - Maximum distance from camera
- * @param cursorDistThreshold - Maximum distance from cursor
- * @returns Index of hovered point, or -1 if no point meets both criteria
- */
-function findHoveredPointIndex(
-  pointData: PointData,
-  cameraPos: [number, number, number],
-  cursorWorldPos: {x: number, y: number, z: number},
-  cameraDistThreshold: number,
-  cursorDistThreshold: number
-): number {
-  let bestIndex = -1;
-  let bestDist = Infinity;
-
-  for (let i = 0; i < pointData.count; i++) {
-    const idx = i * 3;
-    const px = pointData.positions[idx];
-    const py = pointData.positions[idx + 1];
-    const pz = pointData.positions[idx + 2];
-
-    const distToCamera = Math.sqrt(
-      Math.pow(cameraPos[0] - px, 2) +
-      Math.pow(cameraPos[1] - py, 2) +
-      Math.pow(cameraPos[2] - pz, 2)
-    );
-    const cameraNear = distToCamera < cameraDistThreshold;
-
-    const distToCursor = Math.sqrt(
-      Math.pow(cursorWorldPos.x - px, 2) +
-      Math.pow(cursorWorldPos.y - py, 2) +
-      Math.pow(cursorWorldPos.z - pz, 2)
-    );
-    const cursorNear = distToCursor < cursorDistThreshold;
-
-    if (cameraNear && cursorNear) {
-      if (distToCursor < bestDist) {
-        bestDist = distToCursor;
-        bestIndex = i;
-      }
-    }
-  }
-
-  return bestIndex;
 }
 
 const switchToGenerated = async () => {
@@ -450,6 +417,8 @@ const onMouseMove = (event: { deltaX: number, deltaY: number, buttons: number, c
   // Track mouse position for hover detection (always update, even without button press)
   lastMouseX.value = event.clientX
   lastMouseY.value = event.clientY
+  // Keep debug cursor screen position current even when no point data
+  hoverDebug.value = { ...hoverDebug.value, cursorScreen: { x: event.clientX, y: event.clientY } }
 
   // Handle camera rotation when button is pressed
   if (camera.value && event.buttons > 0) {
@@ -472,36 +441,43 @@ const onKeyEvent = (event: { key: string, pressed: boolean }) => {
 const startRenderLoop = () => {
   const render = (timestamp: number) => {
     if (canvasRef.value && camera.value) {
-      // Update camera
       camera.value.update()
 
-      // Update hovered point state (CPU-side identification)
       if (hoverThresholds.value && pointData) {
         const canvas = canvasRef.value.canvasElement
         if (canvas && camera.value) {
           const aspect = canvas.width / canvas.height
           const uniforms = camera.value.getShaderUniforms(aspect)
-          const cameraPos = uniforms.u_cameraPosition
+          const cameraPos: [number, number, number] = [uniforms.u_cameraPosition[0], uniforms.u_cameraPosition[1], uniforms.u_cameraPosition[2]]
 
           // Convert mouse to world space
-          const worldPos = camera.value.convertMouseToWorld(
-            lastMouseX.value,
-            lastMouseY.value,
-            canvas.width,
-            canvas.height
-          )
+          const glScreenPos = { x: lastMouseX.value, y: canvas.height - lastMouseY.value }
 
-          // Find hovered point index
-          const idx = findHoveredPointIndex(
-            pointData,
-            cameraPos,
-            worldPos,
-            hoverThresholds.value.cameraDistThreshold,
-            hoverThresholds.value.cursorDistThreshold
-          )
-
-          // Update hovered point index
+          const idx = -1 // FIXME: get from webgl buffer
           hoveredPointIndex.value = idx
+
+          // Update hover/cursor debug info for DebugInfo component
+          const px = idx >= 0 ? pointData.positions[idx * 3] : 0
+          const py = idx >= 0 ? pointData.positions[idx * 3 + 1] : 0
+          const pz = idx >= 0 ? pointData.positions[idx * 3 + 2] : 0
+          hoverDebug.value = {
+            cursorScreen: { x: lastMouseX.value, y: lastMouseY.value },
+            cursorGLScreen: glScreenPos,
+            cameraDistThreshold: hoverThresholds.value.cameraDistThreshold,
+            cursorDistThreshold: hoverThresholds.value.cursorDistThreshold,
+            hoveredIndex: idx,
+            hoveredPointWorld: idx >= 0 ? { x: px, y: py, z: pz } : null,
+            distToCursor: idx >= 0
+              ? Math.sqrt(
+                  (glScreenPos.x - px) ** 2 + (glScreenPos.y - py) ** 2 + (pz) ** 2
+                )
+              : null,
+            distToCamera: idx >= 0
+              ? Math.sqrt(
+                  (cameraPos[0] - px) ** 2 + (cameraPos[1] - py) ** 2 + (cameraPos[2] - pz) ** 2
+                )
+              : null
+          }
 
           // Reverse lookup for tag metadata (Map<string, number> -> find string by index)
           hoveredPointTag.value = null
@@ -524,7 +500,10 @@ const startRenderLoop = () => {
             if (imageIndex >= 0) {
               for (const [image, index] of pointData.imageLookup.entries()) {
                 if (index === imageIndex) {
-                  hoveredPointImage.value = image
+                  // Concatenate base path if provided
+                  hoveredPointImage.value = imagePathBase.value 
+                    ? `${imagePathBase.value}${image}` 
+                    : image;
                   break
                 }
               }
@@ -533,7 +512,21 @@ const startRenderLoop = () => {
 
           // Log hover state for debugging (verifies CPU-side tracking works)
           if (idx >= 0) {
-            console.log('Hovered point:', idx, 'tag:', hoveredPointTag.value, 'image:', hoveredPointImage.value)
+            const distToCursor = Math.sqrt(
+              (glScreenPos.x - px) ** 2 + (glScreenPos.y - py) ** 2 + (pz) ** 2
+            )
+            const distToCamera = Math.sqrt(
+              (cameraPos[0] - px) ** 2 + (cameraPos[1] - py) ** 2 + (cameraPos[2] - pz) ** 2
+            )
+            console.log('Hovered point:', idx, 'tag:', hoveredPointTag.value, 'image:', hoveredPointImage.value, {
+              cursorGLScreen: glScreenPos,
+              cameraWorld: { x: cameraPos[0], y: cameraPos[1], z: cameraPos[2] },
+              cameraDistThreshold: hoverThresholds.value.cameraDistThreshold,
+              cursorDistThreshold: hoverThresholds.value.cursorDistThreshold,
+              pointWorld: { x: px, y: py, z: pz },
+              distToCursor,
+              distToCamera
+            })
           }
         }
 
@@ -607,7 +600,7 @@ function getOverlayDimensions(overlayRef: Ref<InstanceType<typeof PointOverlay> 
   if (!overlayRef.value) return null;
 
   // Access the exposed overlayRef from component instance
-  const element = overlayRef.value.overlayRef?.value;
+  const element = overlayRef.value.overlayRef;
   if (!element) return null;
 
   const rect = element.getBoundingClientRect();
@@ -652,21 +645,12 @@ function getOverlayDimensions(overlayRef: Ref<InstanceType<typeof PointOverlay> 
           if (hoverThresholds.value && camera.value) {
             const canvas = canvasRef.value.canvasElement
             if (canvas) {
-              // Convert mouse position to world space
-              const worldPos = camera.value.convertMouseToWorld(
-                lastMouseX.value,
-                lastMouseY.value,
-                canvas.width,
-                canvas.height
-              )
+              const glScreenPos = { x: lastMouseX.value, y: canvas.height - lastMouseY.value }
 
-              // Pass cursor world position to shader
-              // Note: Shader uses vec2 uniform (x,y) with z implicitly 0
-              // This is sufficient for hover detection on the z=0 plane
               gl.uniform2f(
-                gl.getUniformLocation(shaderProgram, 'u_cursorWorldPos'),
-                worldPos.x,
-                worldPos.y
+                gl.getUniformLocation(shaderProgram, 'u_cursorGLScreen'),
+                glScreenPos.x,
+                glScreenPos.y
               )
 
               // Pass distance thresholds to shader
@@ -775,7 +759,7 @@ onUnmounted(() => {
 
   // 2. Delete shaders (held by ShaderManager)
   if (shaderManager) {
-    shaderManager.cleanup()
+    shaderManager.dispose()
     shaderManager = null
   }
 

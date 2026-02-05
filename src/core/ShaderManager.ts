@@ -174,16 +174,13 @@ export class ShaderManager {
         uniform float u_hilighted_cluster;
 
         // Hover detection uniforms
-        uniform vec2 u_cursorWorldPos;
         uniform float u_cameraDistThreshold;
-        uniform float u_cursorDistThreshold;
 
         varying float v_isHilighted;
         varying float v_revCamDist;
-        varying float v_isHovered;
+        varying float v_hoverable;
 
         void main() {
-          // No animation - just static points
           vec3 position = a_position;
 
           // Use pre-computed MVP matrix (Projection * View)
@@ -194,15 +191,9 @@ export class ShaderManager {
           gl_Position = u_mvpMatrix * vec4(position, 1.0);
           gl_PointSize = clamp(u_pointSize * revCamDistance, 4.0, 50.0);
 
-          // Two-distance threshold hover detection
           float distToCamera = length(u_cameraPosition - position);
           bool cameraNear = distToCamera < u_cameraDistThreshold;
-
-          float distToCursor = length(vec3(u_cursorWorldPos, 0.0) - position);
-          bool cursorNear = distToCursor < u_cursorDistThreshold;
-
-          // Combined: Both conditions must be true
-          v_isHovered = float(cameraNear && cursorNear);
+          v_hoverable = float(cameraNear);
 
           v_isHilighted = abs(a_clusterId - u_hilighted_cluster) < 0.4 ? 1.0 : 0.0;
           v_revCamDist = revCamDistance;
@@ -211,13 +202,16 @@ export class ShaderManager {
       fragment: `
         precision mediump float;
 
+        uniform vec2 u_cursorGLScreen;
+        uniform float u_cursorDistThreshold;
         varying float v_isHilighted;
         varying float v_revCamDist;
-        varying float v_isHovered;
+        varying float v_hoverable;
 
         void main() {
           vec2 coord = gl_PointCoord - vec2(0.5);
           float distance = length(coord);
+          float distToCursor =  length(u_cursorGLScreen - gl_FragCoord.xy);
 
           if (distance > 0.5) {
             discard;
@@ -227,13 +221,8 @@ export class ShaderManager {
 
           vec3 c_base = v_isHilighted > 0.5 ? vec3(1.0, 0.5, 0.2) : vec3(1.0);
           vec3 c_far = v_isHilighted > 0.5 ? vec3(0.1, 0.0, 0.1) : vec3(0.0, 0.0, 0.3);
-
-          // 2x brightness boost when hovered
-          vec3 c_hovered = v_isHovered > 0.5 ? c_base * 2.0 : c_base;
-
-          // Mix based on hover state (apply boost to both near and far colors)
-          vec3 c_far_hovered = v_isHovered > 0.5 ? vec3(0.2, 0.1, 0.2) : c_far;
-          vec3 color = mix(c_far_hovered, c_hovered, v_revCamDist);
+          vec3 color = mix(c_far, c_base, v_revCamDist);
+          color = (v_hoverable > 0.5) && (distToCursor < 30.0) ? vec3(1.0, 0.0, 0.0) : color;
 
           gl_FragColor = vec4(color, intensity);
         }
