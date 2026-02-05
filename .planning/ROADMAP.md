@@ -7,7 +7,7 @@ WebGL Clusters Playground — 3D point cloud visualization with data loading, ca
 ## Milestones
 
 - ✅ **v1 Data Loading Capabilities** — Phases 1, 1.1, 2-8 (shipped 2026-02-04) — [See full details](./milestones/v1-ROADMAP.md)
-- 🚧 **v1.2 Point Hover with Tag/Image Display** — Phases 9-11 (in progress)
+- ✅ **v1.2 Point Hover with Tag/Image Display** — Phases 9-11 (shipped 2026-02-05)
 
 ## Phases
 
@@ -28,13 +28,13 @@ WebGL Clusters Playground — 3D point cloud visualization with data loading, ca
 
 </details>
 
-### 🚧 v1.2 Point Hover with Tag/Image Display (In Progress)
+### ✅ v1.2 Point Hover with Tag/Image Display (Complete)
 
 **Milestone Goal:** Enable users to hover over points to see associated tags and images via GPU-based detection and screen-space overlay.
 
 - [x] Phase 9: Data Foundation (1 plan) — completed 2026-02-05
 - [x] Phase 10: GPU Hover Detection (3 plans) — completed 2026-02-05
-- [x] Phase 11: Screen Overlay (3 plans) — completed 2026-02-05
+- [x] Phase 11: Screen Overlay (4 plans) — completed 2026-02-05
 
 ## Phase Details
 
@@ -96,10 +96,11 @@ See `.planning/milestones/v1-ROADMAP.md` for complete v1 phase details.
 4. User can hover over points without tag/image data and system works normally (no overlay)
 5. (Optional) Overlay clamps to viewport edges to avoid clipping when point is near screen edge
 
-**Plans**: 3 plans
+**Plans**: 4 plans
 - [x] 11-01-PLAN.md — Add CPU-side hovered point identification and metadata retrieval — completed 2026-02-05
 - [x] 11-02-PLAN.md — Add world-to-screen projection to Camera class — completed 2026-02-05
-- [ ] 11-03-PLAN.md — Create Vue overlay component with tag/image display and edge clamping
+- [x] 11-03-PLAN.md — Create Vue overlay component with tag/image display and edge clamping — completed 2026-02-05
+- [x] 11-04-PLAN.md — Dynamic overlay dimension calculation with transform-aware clamping — completed 2026-02-05
 
 ## Progress
 
@@ -119,6 +120,6 @@ Phases execute in numeric order: 1 → 1.1 → 2 → 3 → 4 → 5 → 6 → 7 �
 | 8. Highlighted Cluster Selector | v1 | 1/1 | Complete | 2026-02-04 |
 | 9. Data Foundation | v1.2 | 1/1 | Complete | 2026-02-05 |
 | 10. GPU Hover Detection | v1.2 | 3/3 | Complete | 2026-02-05 |
-| 11. Screen Overlay | v1.2 | 3/3 | Complete | 2026-02-05 |
+| 11. Screen Overlay | v1.2 | 4/4 | Complete | 2026-02-05 |
 
-**Milestone Progress:** v1 ✅ Complete | v1.2 🚧 ALL PHASES COMPLETE - ready for audit
+**Milestone Progress:** v1 ✅ Complete | v1.2 ✅ Complete - ready for audit

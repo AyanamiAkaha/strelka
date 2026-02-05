@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 ## Current Position
 
 Phase: 11 of 11 (Screen Overlay)
-Plan: 3/3 complete
+Plan: 4/4 complete
 Status: Phase complete
-Last activity: 2026-02-05 — Completed 11-03: Vue overlay component with viewport edge clamping
+Last activity: 2026-02-05 — Completed 11-04: Dynamic overlay dimension calculation
 
-Progress: [██████████████████████████████] 92% (33/36 plans complete)
+Progress: [██████████████████████████████] 94% (34/36 plans complete)
 
 ## Performance Metrics
 
@@ -65,13 +65,14 @@ v1.2 Milestone Decisions:
 - Phase 11-01: Use iterative reverse lookup for Map (O(n) per lookup) - acceptable for low unique values count
 - Phase 11-02: Use Camera.getShaderUniforms() MVP matrix for world-to-screen conversion - ensures overlay uses same transformation as point rendering
 - Phase 11-03: Fixed shader type mismatch - u_cursorWorldPos must be vec3 not vec2 (Phase 10-02 bug)
+- Phase 11-04: Use Vue template refs for dynamic overlay dimension measurement - overlay dimensions calculated from actual DOM content, not fixed values
 - v1.2 complete: Point Hover with Tag/Image Display milestone - ready for audit
   - Phase 9: Data Foundation (DATA-01, DATA-02, DATA-03) - Extend types and loaders for optional tag/image columns - Complete
   - Phase 10: GPU Hover Detection (HOVER-01, HOVER-02, HOVER-03) - GPU-based distance threshold with adaptive threshold from JS - Complete
-  - Phase 11: Screen Overlay (OVERLAY-01, OVERLAY-02) - Vue overlay for tag/image display with optional edge clamping - Complete
+  - Phase 11: Screen Overlay (OVERLAY-01, OVERLAY-02, OVERLAY-03) - Vue overlay for tag/image display with dynamic sizing and corrected edge clamping - Complete
 
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Phase 11 complete - ready for milestone audit
+Stopped at: Completed 11-04: Dynamic overlay dimension calculation
 Resume file: None
