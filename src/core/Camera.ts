@@ -1,4 +1,5 @@
 import { vec3, quat, mat4 } from './Math'
+import { vec4 } from 'gl-matrix'
 
 /**
  * Quaternion-based camera for 3D WebGL rendering.
@@ -290,6 +291,45 @@ export class Camera {
       u_far: this.far,
       u_aspect: aspect
     }
+  }
+
+  /**
+   * Convert world position to screen coordinates
+   *
+   * Projects world position using MVP matrix to get screen coordinates for overlay positioning.
+   * Returns null if point is behind camera (w <= 0 in clip space).
+   *
+   * @param worldPos - World position {x, y, z} to convert
+   * @param canvasWidth - Canvas width in pixels
+   * @param canvasHeight - Canvas height in pixels
+   * @returns Screen position {x, y} in pixels, or null if behind camera
+   */
+  worldToScreen(worldPos: {x: number, y: number, z: number}, canvasWidth: number, canvasHeight: number): {x: number, y: number} | null {
+    // Get MVP matrix from camera
+    const aspect = canvasWidth / canvasHeight;
+    const uniforms = this.getShaderUniforms(aspect);
+    const mvp = uniforms.u_mvpMatrix;
+
+    // Transform world position to clip space
+    const clipPos = vec4.create();
+    vec4.set(clipPos, worldPos.x, worldPos.y, worldPos.z, 1.0);
+    vec4.transformMat4(clipPos, clipPos, mvp);
+
+    // Perspective divide (clip space w)
+    if (clipPos[3] <= 0) {
+      return null; // Point is behind camera
+    }
+
+    // Convert to NDC (-1 to 1)
+    const ndcX = clipPos[0] / clipPos[3];
+    const ndcY = clipPos[1] / clipPos[3];
+
+    // Convert NDC to screen coordinates (0 to canvasWidth/Height)
+    // Flip Y because WebGL Y is up, screen Y is down
+    const screenX = (ndcX + 1.0) * 0.5 * canvasWidth;
+    const screenY = (1.0 - ndcY) * 0.5 * canvasHeight;
+
+    return { x: screenX, y: screenY };
   }
 
   /**
