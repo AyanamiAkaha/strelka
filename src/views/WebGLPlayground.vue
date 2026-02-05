@@ -140,6 +140,11 @@ const lastMouseX = ref(0)
 const lastMouseY = ref(0)
 const hoverThresholds = ref<{cameraDistThreshold: number, cursorDistThreshold: number} | null>(null)
 
+// Hovered point state for metadata retrieval
+const hoveredPointIndex = ref(-1)
+const hoveredPointTag = ref<string | null>(null)
+const hoveredPointImage = ref<string | null>(null)
+
 watch(ppc, () => regenPoints())
 
 /**
