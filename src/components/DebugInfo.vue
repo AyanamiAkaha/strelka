@@ -18,6 +18,8 @@
         Thresholds: cam {{ hoverDebug.cameraDistThreshold?.toFixed(3) }}, cursor {{ hoverDebug.cursorDistThreshold?.toFixed(3) }}
       </div>
       <div>Hovered index: {{ hoverDebug.hoveredIndex }}</div>
+      <div>Tag: <template v-if="hoverDebug.hoveredTag != null">{{ hoverDebug.hoveredTag }}</template><i v-else>null</i></div>
+      <div>Image: <template v-if="hoverDebug.hoveredImage != null">{{ hoverDebug.hoveredImage }}</template><i v-else>null</i></div>
       <div v-if="hoverDebug.hoveredPointWorld">
         Point world: {{ formatVector(hoverDebug.hoveredPointWorld) }}
       </div>
@@ -44,6 +46,8 @@ interface HoverDebugInfo {
   cursorDistThreshold: number | null
   hoveredIndex: number
   hoveredPointWorld: { x: number, y: number, z: number } | null
+  hoveredTag: string | null
+  hoveredImage: string | null
   distToCursor: number | null
   distToCamera: number | null
 }

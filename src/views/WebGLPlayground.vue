@@ -165,6 +165,8 @@ interface HoverDebugInfo {
   cursorDistThreshold: number | null
   hoveredIndex: number
   hoveredPointWorld: { x: number, y: number, z: number } | null
+  hoveredTag: string | null
+  hoveredImage: string | null
   distToCursor: number | null
   distToCamera: number | null
 }
@@ -175,6 +177,8 @@ const hoverDebug = ref<HoverDebugInfo>({
   cursorDistThreshold: null,
   hoveredIndex: -1,
   hoveredPointWorld: null,
+  hoveredTag: null,
+  hoveredImage: null,
   distToCursor: null,
   distToCamera: null
 })
@@ -450,34 +454,25 @@ const startRenderLoop = () => {
           const uniforms = camera.value.getShaderUniforms(aspect)
           const cameraPos: [number, number, number] = [uniforms.u_cameraPosition[0], uniforms.u_cameraPosition[1], uniforms.u_cameraPosition[2]]
 
-          // Convert mouse to world space
-          const glScreenPos = { x: lastMouseX.value, y: canvas.height - lastMouseY.value }
+          // Cursor in canvas pixel space (origin top-left); matches fragment shader hover radius 30px
+          const CURSOR_HOVER_PIXELS = 30
+          const rect = canvas.getBoundingClientRect()
+          const cursorCanvasX = lastMouseX.value - rect.left
+          const cursorCanvasY = lastMouseY.value - rect.top
+          const glScreenPos = { x: cursorCanvasX, y: canvas.height - cursorCanvasY }
 
-          const idx = -1 // FIXME: get from webgl buffer
+          const closest = camera.value.getClosestPoint(
+            uniforms.u_mvpMatrix,
+            pointData.positions,
+            cursorCanvasX,
+            cursorCanvasY,
+            canvas.width,
+            canvas.height,
+            hoverThresholds.value.cameraDistThreshold,
+            CURSOR_HOVER_PIXELS
+          )
+          const idx = closest?.index ?? -1
           hoveredPointIndex.value = idx
-
-          // Update hover/cursor debug info for DebugInfo component
-          const px = idx >= 0 ? pointData.positions[idx * 3] : 0
-          const py = idx >= 0 ? pointData.positions[idx * 3 + 1] : 0
-          const pz = idx >= 0 ? pointData.positions[idx * 3 + 2] : 0
-          hoverDebug.value = {
-            cursorScreen: { x: lastMouseX.value, y: lastMouseY.value },
-            cursorGLScreen: glScreenPos,
-            cameraDistThreshold: hoverThresholds.value.cameraDistThreshold,
-            cursorDistThreshold: hoverThresholds.value.cursorDistThreshold,
-            hoveredIndex: idx,
-            hoveredPointWorld: idx >= 0 ? { x: px, y: py, z: pz } : null,
-            distToCursor: idx >= 0
-              ? Math.sqrt(
-                  (glScreenPos.x - px) ** 2 + (glScreenPos.y - py) ** 2 + (pz) ** 2
-                )
-              : null,
-            distToCamera: idx >= 0
-              ? Math.sqrt(
-                  (cameraPos[0] - px) ** 2 + (cameraPos[1] - py) ** 2 + (cameraPos[2] - pz) ** 2
-                )
-              : null
-          }
 
           // Reverse lookup for tag metadata (Map<string, number> -> find string by index)
           hoveredPointTag.value = null
@@ -500,14 +495,34 @@ const startRenderLoop = () => {
             if (imageIndex >= 0) {
               for (const [image, index] of pointData.imageLookup.entries()) {
                 if (index === imageIndex) {
-                  // Concatenate base path if provided
-                  hoveredPointImage.value = imagePathBase.value 
-                    ? `${imagePathBase.value}${image}` 
-                    : image;
+                  hoveredPointImage.value = imagePathBase.value
+                    ? `${imagePathBase.value}${image}`
+                    : image
                   break
                 }
               }
             }
+          }
+
+          // Update hover/cursor debug info for DebugInfo component
+          const px = idx >= 0 ? pointData.positions[idx * 3] : 0
+          const py = idx >= 0 ? pointData.positions[idx * 3 + 1] : 0
+          const pz = idx >= 0 ? pointData.positions[idx * 3 + 2] : 0
+          hoverDebug.value = {
+            cursorScreen: { x: lastMouseX.value, y: lastMouseY.value },
+            cursorGLScreen: glScreenPos,
+            cameraDistThreshold: hoverThresholds.value.cameraDistThreshold,
+            cursorDistThreshold: hoverThresholds.value.cursorDistThreshold,
+            hoveredIndex: idx,
+            hoveredPointWorld: idx >= 0 ? { x: px, y: py, z: pz } : null,
+            hoveredTag: hoveredPointTag.value,
+            hoveredImage: hoveredPointImage.value,
+            distToCursor: closest?.distance ?? null,
+            distToCamera: idx >= 0
+              ? Math.sqrt(
+                  (cameraPos[0] - px) ** 2 + (cameraPos[1] - py) ** 2 + (cameraPos[2] - pz) ** 2
+                )
+              : null
           }
 
           // Log hover state for debugging (verifies CPU-side tracking works)

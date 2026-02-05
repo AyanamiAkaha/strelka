@@ -29,6 +29,14 @@ export interface CameraControls {
   fast: boolean
 }
 
+/** Result of picking the point closest to the cursor in screen space. */
+export type ClosestPointResult = {
+  index: number
+  worldPos: [number, number, number]
+  screenPos: [number, number]
+  distance: number
+}
+
 export class Camera {
   // Camera state
   /** Camera position in world space */
@@ -134,6 +142,78 @@ export class Camera {
         if (pressed) this.reset()
         break
     }
+  }
+
+  /**
+   * Get the point closest to the cursor in screen space.
+   * Caller must pass the current MVP matrix (e.g. from getShaderUniforms).
+   * Only considers points within maxDistanceFromCamera (world-space; matches u_cameraDistThreshold)
+   * and within maxDistancePixels of the cursor (default 30, matches fragment shader hover highlight).
+   * Camera-distance cull is applied first for efficiency with large point sets.
+   *
+   * @param mvpMatrix - Current projection * view matrix (e.g. uniforms.u_mvpMatrix)
+   * @param positions - Float32Array of x,y,z per point (interleaved)
+   * @param cursorX - Cursor X in canvas pixel space (origin top-left)
+   * @param cursorY - Cursor Y in canvas pixel space (origin top-left)
+   * @param canvasWidth - Canvas width in pixels
+   * @param canvasHeight - Canvas height in pixels
+   * @param maxDistanceFromCamera - Max world-space distance from camera (points beyond are skipped)
+   * @param maxDistancePixels - Max screen-space distance to cursor (default 30)
+   * @returns Closest point info or null if none within thresholds or behind camera
+   */
+  getClosestPoint(
+    mvpMatrix: mat4,
+    positions: Float32Array,
+    cursorX: number,
+    cursorY: number,
+    canvasWidth: number,
+    canvasHeight: number,
+    maxDistanceFromCamera: number,
+    maxDistancePixels: number = 30
+  ): ClosestPointResult | null {
+    let closest: ClosestPointResult | null = null
+    let minDistance = Infinity
+    const count = positions.length / 3
+    const maxDistSq = maxDistanceFromCamera * maxDistanceFromCamera
+    const cam = this.position
+
+    for (let i = 0; i < count; i++) {
+      const px = positions[i * 3]
+      const py = positions[i * 3 + 1]
+      const pz = positions[i * 3 + 2]
+
+      // Cull by distance from camera first (cheap, avoids MVP for far points)
+      const dxCam = px - cam[0]
+      const dyCam = py - cam[1]
+      const dzCam = pz - cam[2]
+      if (dxCam * dxCam + dyCam * dyCam + dzCam * dzCam > maxDistSq) continue
+
+      const worldPos = vec4.fromValues(px, py, pz, 1.0)
+      const clipPos = vec4.create()
+      vec4.transformMat4(clipPos, worldPos, mvpMatrix)
+
+      if (clipPos[3] <= 0) continue // Behind camera
+
+      const ndcX = clipPos[0] / clipPos[3]
+      const ndcY = clipPos[1] / clipPos[3]
+      const screenX = (ndcX + 1) * canvasWidth / 2
+      const screenY = (1 - ndcY) * canvasHeight / 2
+
+      const dx = screenX - cursorX
+      const dy = screenY - cursorY
+      const distance = Math.sqrt(dx * dx + dy * dy)
+
+      if (distance < minDistance && distance <= maxDistancePixels) {
+        minDistance = distance
+        closest = {
+          index: i,
+          worldPos: [px, py, pz],
+          screenPos: [screenX, screenY],
+          distance
+        }
+      }
+    }
+    return closest
   }
 
   /**
