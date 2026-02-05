@@ -39,7 +39,7 @@ Progress: [███████████████████████
 | 9 | 1 | 1 | 3.0 min |
 | 10 | 3 | 3 | 3.0 min |
 | 11 | 4 | 4 | 4.0 min |
-| 12 | 1 | 1 | 10 min |
+| 12 | 1 | 1 | 13 min |
 
 **Recent Trend:**
 - Phase 12-01 plan: 10 min (integration bug fixes + rendering regression fix)

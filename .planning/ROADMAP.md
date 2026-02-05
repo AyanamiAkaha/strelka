@@ -28,14 +28,14 @@ WebGL Clusters Playground — 3D point cloud visualization with data loading, ca
 
 </details>
 
-### ✅ v1.2 Point Hover with Tag/Image Display (In Progress)
+### ✅ v1.2 Point Hover with Tag/Image Display (SHIPPED 2026-02-06)
 
 **Milestone Goal:** Enable users to hover over points to see associated tags and images via GPU-based detection and screen-space overlay.
 
 - [x] Phase 9: Data Foundation (1 plan) — completed 2026-02-05
 - [x] Phase 10: GPU Hover Detection (3 plans) — completed 2026-02-05
 - [x] Phase 11: Screen Overlay (4 plans) — completed 2026-02-05
-- [ ] Phase 12: Fix v1.2 Integration Bugs (1 plan) — in progress
+- [x] Phase 12: Fix v1.2 Integration Bugs (1 plan) — completed 2026-02-06
 
 ## Phase Details
 
@@ -118,7 +118,7 @@ See `.planning/milestones/v1-ROADMAP.md` for complete v1 phase details.
 4. All 3 E2E flows work correctly: JSON with tag, SQLite with image, no metadata
 
 **Plans**: 1 plan
-- [x] 12-01-PLAN.md — Fix 3 integration bugs + verify E2E flows — pending (verified)
+- [x] 12-01-PLAN.md — Fix 3 integration bugs + verify E2E flows — completed 2026-02-06
 
 ## Progress
 
