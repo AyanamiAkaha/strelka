@@ -96,7 +96,10 @@ See `.planning/milestones/v1-ROADMAP.md` for complete v1 phase details.
 4. User can hover over points without tag/image data and system works normally (no overlay)
 5. (Optional) Overlay clamps to viewport edges to avoid clipping when point is near screen edge
 
-**Plans**: TBD
+**Plans**: 3 plans
+- [ ] 11-01-PLAN.md — Add CPU-side hovered point identification and metadata retrieval
+- [ ] 11-02-PLAN.md — Add world-to-screen projection to Camera class
+- [ ] 11-03-PLAN.md — Create Vue overlay component with tag/image display
 
 ## Progress
 
