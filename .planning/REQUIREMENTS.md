@@ -9,19 +9,19 @@ Requirements for point hover with tag/image display. Each maps to roadmap phases
 
 ### Hover Detection
 
-- [ ] **HOVER-01**: User can hover over points using GPU-based distance threshold detection that maintains 45 FPS @ 30M points
-- [ ] **HOVER-02**: Hover detection uses adaptive distance threshold (manual threshold first for basic verification, histogram-based calculation second for optimal selection)
+- [x] **HOVER-01**: User can hover over points using GPU-based distance threshold detection that maintains 45 FPS @ 30M points
+- [x] **HOVER-02**: Hover detection uses adaptive distance threshold (manual threshold first for basic verification, histogram-based calculation second for optimal selection)
 
 ### Screen Overlay
 
-- [ ] **OVERLAY-01**: User can see tag and/or image displayed in screen-space Vue overlay when hovering over a point
-- [ ] **OVERLAY-02**: Screen-space overlay positions near hovered point and clamps to viewport edges to avoid clipping
+- [x] **OVERLAY-01**: User can see tag and/or image displayed in screen-space Vue overlay when hovering over a point
+- [x] **OVERLAY-02**: Screen-space overlay positions near hovered point and clamps to viewport edges to avoid clipping
 
 ### Data Schema
 
-- [ ] **DATA-01**: System loads and uses optional `tag` column from JSON and SQLite data
-- [ ] **DATA-02**: System loads and uses optional `image` column from JSON and SQLite data
-- [ ] **DATA-03**: System gracefully handles missing tag/image data by skipping overlay display (no errors or warnings)
+- [x] **DATA-01**: System loads and uses optional `tag` column from JSON and SQLite data
+- [x] **DATA-02**: System loads and uses optional `image` column from JSON and SQLite data
+- [x] **DATA-03**: System gracefully handles missing tag/image data by skipping overlay display (no errors or warnings)
 
 ## v2+ Requirements
 
@@ -64,13 +64,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| HOVER-01 | Phase 10 | Pending |
-| HOVER-02 | Phase 10 | Pending |
-| OVERLAY-01 | Phase 11 | Pending |
-| OVERLAY-02 | Phase 11 (Could have) | Pending |
-| DATA-01 | Phase 9 | Pending |
-| DATA-02 | Phase 9 | Pending |
-| DATA-03 | Phase 9 | Pending |
+| HOVER-01 | Phase 10 | Complete |
+| HOVER-02 | Phase 10 | Complete |
+| OVERLAY-01 | Phase 11 | Complete |
+| OVERLAY-02 | Phase 11 (Could have) | Complete |
+| DATA-01 | Phase 9 | Complete |
+| DATA-02 | Phase 9 | Complete |
+| DATA-03 | Phase 9 | Complete |
 
 **Coverage:**
 - v1.2 requirements: 7 total
