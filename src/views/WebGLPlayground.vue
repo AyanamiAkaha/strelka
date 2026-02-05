@@ -665,10 +665,11 @@ function getOverlayDimensions(overlayRef: Ref<InstanceType<typeof PointOverlay> 
               )
 
               // Pass cursor world position to shader
-              gl.uniform2f(
+              gl.uniform3f(
                 gl.getUniformLocation(shaderProgram, 'u_cursorWorldPos'),
                 worldPos.x,
-                worldPos.y
+                worldPos.y,
+                worldPos.z
               )
 
               // Pass distance thresholds to shader
