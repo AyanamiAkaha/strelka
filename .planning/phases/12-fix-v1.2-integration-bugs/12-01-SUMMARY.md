@@ -31,12 +31,12 @@ key-files:
 
 key-decisions:
   - "Use loadedData.positions instead of result.pointData.positions in JSON loading"
-  - "Keep shader uniform as vec2 with gl.uniform2f (GLSL implicitly extends to vec3)"
+  - "Keep shader uniform as vec2 with gl.uniform2f, use explicit vec3(u_cursorWorldPos, 0.0) promotion in shader"
   - "Revert incorrect uniform3f fix that broke WebGL rendering"
   - "Account for CSS transform offset in edge clamping calculation"
 
 patterns-established:
-  - "Pattern 1: GLSL implicitly extends vec2 to vec3: vec2(x,y) becomes vec3(x,y,0)"
+  - "Pattern 1: GLSL requires explicit type conversion: vec2 must be explicitly promoted to vec3 using vec3(vec2, z)"
   - "Pattern 2: Shader uniforms must match vertex shader type declarations"
   - "Pattern 3: Edge clamping must account for CSS transform offsets"
   - "Pattern 4: Variable scope validation in async functions"
@@ -56,7 +56,7 @@ completed: 2026-02-06
 - **Started:** 2026-02-05T10:17:35Z (original execution)
 - **Resumed:** 2026-02-06T00:00:00Z (continuation)
 - **Completed:** 2026-02-06T00:00:00Z
-- **Tasks:** 5
+- **Tasks:** 6
 - **Files modified:** 2
 
 ## Accomplishments
@@ -70,6 +70,27 @@ completed: 2026-02-06
 ### Task 5: E2E verification and rendering fix (completed in continuation)
 **Root cause identified:** The uniform3f fix (commit a60480b) broke WebGL rendering.
 
+### Task 6: Shader type conversion fix (completed after continuation)
+**Root cause identified:** GLSL compilation error from incorrect implicit type conversion assumption.
+
+**Issue:** Shader compilation failed with error:
+```
+ERROR: 0:42: '-' : wrong operand types - no operation '-' exists that takes a left-hand operand of type 'uniform highp 2-component vector of float' and a right operand of type 'highp 3-component vector of float'
+```
+
+**Original bug (line 201):**
+```glsl
+float distToCursor = length(u_cursorWorldPos - position);
+```
+where `u_cursorWorldPos` is `uniform vec2` and `position` is `vec3`.
+
+**Fix applied:**
+```glsl
+float distToCursor = length(vec3(u_cursorWorldPos, 0.0) - position);
+```
+
+**Key insight:** GLSL does NOT implicitly promote types in arithmetic operations. Must explicitly convert vec2 to vec3 using `vec3(vec2, z)` constructor with z=0.0. Hover detection needs z=0 plane cursor position.
+
 **Analysis:**
 - Original working code: `uniform vec2 u_cursorWorldPos` with `gl.uniform2f(worldPos.x, worldPos.y)`
 - Phase 11-03 changed shader to `uniform vec3 u_cursorWorldPos` but didn't update JavaScript
@@ -79,8 +100,8 @@ completed: 2026-02-06
 **Correct approach (reverted to):**
 - Shader: `uniform vec2 u_cursorWorldPos`
 - JavaScript: `gl.uniform2f(worldPos.x, worldPos.y)`
-- GLSL extends vec2 to vec3 implicitly: `vec2(x,y)` becomes `vec3(x,y,0)`
-- Distance calculation `length(u_cursorWorldPos - position)` becomes `length(vec3(cursor.x, cursor.y, 0) - vec3(point.x, point.y, point.z))`
+- **CRITICAL FIX:** Explicitly promote vec2 to vec3 in shader using `vec3(u_cursorWorldPos, 0.0)`
+- Distance calculation `length(vec3(u_cursorWorldPos, 0.0) - position)` correctly subtracts vec3 from vec3
 - This correctly calculates distance on the z=0 plane, which is what hover detection needs
 
 ## Task Commits
@@ -99,6 +120,12 @@ Each task was committed atomically:
    - Reverted `gl.uniform3f(..., worldPos.x, worldPos.y, worldPos.z)` to `gl.uniform2f(..., worldPos.x, worldPos.y)` in render loop
    - Restored working WebGL rendering
 
+6. **Task 6: Fix shader type conversion for hover detection** - `dcf49d1` (fix)
+   - Fixed GLSL compilation error: wrong operand types in subtraction (vec2 - vec3)
+   - Explicitly promote vec2 to vec3 using `vec3(u_cursorWorldPos, 0.0)` before subtraction
+   - Correct fix is explicit type promotion, NOT implicit conversion (GLSL doesn't do implicit promotion)
+   - Shader now correctly calculates distance: `length(vec3(u_cursorWorldPos, 0.0) - position)`
+
 ## Files Created/Modified
 
 - `src/views/WebGLPlayground.vue` - Fixed 3 integration bugs, removed debug statement, reverted uniform3f to uniform2f
@@ -108,8 +135,9 @@ Each task was committed atomically:
 
 1. **JSON loading variable reference:** Use `loadedData.positions` instead of `result.pointData.positions` (correct fix in task 1)
 2. **Shader uniform type (CRITICAL):** Keep `uniform vec2 u_cursorWorldPos` with `gl.uniform2f` (reverted incorrect fix from task 2)
-3. **Edge clamping:** Account for CSS transform offset: minimum Y = `overlayHeight + 15` (correct fix in task 3)
-4. **Code cleanup:** Remove debug console.log statements from production code (correct fix in task 4)
+3. **Shader type conversion (CRITICAL):** Explicitly promote vec2 to vec3 in shader using `vec3(u_cursorWorldPos, 0.0)` before subtraction - GLSL does NOT implicitly promote types (fix in task 6)
+4. **Edge clamping:** Account for CSS transform offset: minimum Y = `overlayHeight + 15` (correct fix in task 3)
+5. **Code cleanup:** Remove debug console.log statements from production code (correct fix in task 4)
 
 ## Deviations from Plan
 
@@ -123,9 +151,9 @@ Each task was committed atomically:
 - Result: WebGL rendering failed (blank screen, camera frozen)
 
 **Root cause:**
-- The original `vec2` implementation was actually correct
-- GLSL implicitly extends vec2 to vec3 with z=0: `vec2(x,y)` → `vec3(x,y,0)`
-- Distance calculation `length(u_cursorWorldPos - position)` works correctly with this implicit conversion
+- The original `vec2` implementation needed explicit type conversion in shader
+- GLSL does NOT implicitly extend vec2 to vec3 in arithmetic operations
+- Original code had compilation error: `length(u_cursorWorldPos - position)` where u_cursorWorldPos is vec2 and position is vec3
 - The `vec3` fix passed `worldPos.z` which had unexpected value from `convertMouseToWorld()`:
   ```javascript
   const worldZ = this.position[2] + forward[2] * distanceToPlane;
@@ -133,8 +161,9 @@ Each task was committed atomically:
   This z coordinate represents where the mouse ray intersects a plane at fixed distance, not the cursor's z position on the z=0 plane where points are rendered.
 
 **Correct fix applied (Rule 1 - Auto-fix bug):**
-- Reverted to original `vec2` / `uniform2f` approach
-- This restores WebGL rendering functionality
+- Keep uniform as `vec2` / `uniform2f` approach (NOT change to vec3)
+- Add explicit type promotion in shader: `vec3(u_cursorWorldPos, 0.0)` before subtraction
+- This fixes GLSL compilation error and restores WebGL rendering functionality
 - Hover detection works correctly because it calculates distance from cursor to points on the z=0 plane
 
 ## Issues Encountered
@@ -142,9 +171,16 @@ Each task was committed atomically:
 **Issue: WebGL rendering failure after shader uniform fix**
 - **Symptoms:** Blank screen, Vue UI loads but WebGL doesn't render, camera doesn't move
 - **Cause:** Incorrect uniform type fix (commit a60480b) passed wrong z value to shader
-- **Resolution:** Reverted to vec2/uniform2f approach with GLSL implicit conversion
+- **Resolution:** Reverted to vec2/uniform2f approach
 - **Files:** src/views/WebGLPlayground.vue (line 668-672), src/core/ShaderManager.ts (line 177)
 - **Deviation:** Rule 1 (Auto-fix bug) applied automatically to restore rendering
+
+**Issue: Shader compilation error - wrong operand types**
+- **Symptoms:** GLSL compilation error "wrong operand types" when subtracting vec3 from vec2
+- **Cause:** GLSL does NOT implicitly promote vec2 to vec3 in arithmetic operations (incorrect assumption in task 5)
+- **Resolution:** Added explicit type promotion in shader using `vec3(u_cursorWorldPos, 0.0)` before subtraction
+- **Files:** src/core/ShaderManager.ts (line 201)
+- **Deviation:** Rule 1 (Auto-fix bug) applied automatically to fix compilation error
 
 ## Authentication Gates
 
