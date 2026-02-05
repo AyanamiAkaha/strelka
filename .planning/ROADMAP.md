@@ -118,7 +118,7 @@ See `.planning/milestones/v1-ROADMAP.md` for complete v1 phase details.
 4. All 3 E2E flows work correctly: JSON with tag, SQLite with image, no metadata
 
 **Plans**: 1 plan
-- [ ] 12-01-PLAN.md — Fix integration bugs (JSON loading, shader uniform, edge clamping, cleanup) — pending
+- [x] 12-01-PLAN.md — Fix integration bugs (JSON loading, shader uniform, edge clamping, cleanup) — created 2026-02-05
 
 ## Progress
 
