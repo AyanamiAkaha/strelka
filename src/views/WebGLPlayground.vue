@@ -292,6 +292,60 @@ function calculatePointDensityThresholds(positions: Float32Array, count: number)
   return { cameraDistThreshold, cursorDistThreshold };
 }
 
+/**
+ * Find which point is hovered using same distance thresholds as shader
+ *
+ * CPU-side point selection that mirrors GPU hover detection logic.
+ * Uses two-distance threshold: point must be within cameraDistThreshold AND cursorDistThreshold.
+ *
+ * @param pointData - Point data with positions array
+ * @param cameraPos - Camera position in world space [x, y, z]
+ * @param cursorWorldPos - Cursor position in world space {x, y, z}
+ * @param cameraDistThreshold - Maximum distance from camera
+ * @param cursorDistThreshold - Maximum distance from cursor
+ * @returns Index of hovered point, or -1 if no point meets both criteria
+ */
+function findHoveredPointIndex(
+  pointData: PointData,
+  cameraPos: [number, number, number],
+  cursorWorldPos: {x: number, y: number, z: number},
+  cameraDistThreshold: number,
+  cursorDistThreshold: number
+): number {
+  let bestIndex = -1;
+  let bestDist = Infinity;
+
+  for (let i = 0; i < pointData.count; i++) {
+    const idx = i * 3;
+    const px = pointData.positions[idx];
+    const py = pointData.positions[idx + 1];
+    const pz = pointData.positions[idx + 2];
+
+    const distToCamera = Math.sqrt(
+      Math.pow(cameraPos[0] - px, 2) +
+      Math.pow(cameraPos[1] - py, 2) +
+      Math.pow(cameraPos[2] - pz, 2)
+    );
+    const cameraNear = distToCamera < cameraDistThreshold;
+
+    const distToCursor = Math.sqrt(
+      Math.pow(cursorWorldPos.x - px, 2) +
+      Math.pow(cursorWorldPos.y - py, 2) +
+      Math.pow(cursorWorldPos.z - pz, 2)
+    );
+    const cursorNear = distToCursor < cursorDistThreshold;
+
+    if (cameraNear && cursorNear) {
+      if (distToCursor < bestDist) {
+        bestDist = distToCursor;
+        bestIndex = i;
+      }
+    }
+  }
+
+  return bestIndex;
+}
+
 const switchToGenerated = async () => {
   if (isLoading.value) return  // Prevent race condition (Pitfall 2)
   isLoading.value = true
