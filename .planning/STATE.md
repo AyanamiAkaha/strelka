@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-04)
 
 **Core value:** Users can load and explore real point cluster data in 3D with interactive camera controls and point hover metadata display
-**Current focus:** Phase 11: Screen Overlay
+**Current focus:** Phase 12: Integration Bug Fixes
 
 ## Current Position
 
-Phase: 11 of 11 (Screen Overlay)
-Plan: 4/4 complete
+Phase: 12 of 12 (Integration Bug Fixes)
+Plan: 1/1 complete
 Status: Phase complete
-Last activity: 2026-02-05 — Completed 11-04 gap closure; edge clamping marked acceptable (OVERLAY-02 optional)
+Last activity: 2026-02-06 — Completed 12-01 E2E verification and rendering fix
 
-Progress: [██████████████████████████████] 100% (34/34 plans complete)
+Progress: [██████████████████████████████] 100% (35/35 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 34 (v1.0: 27, v1.2: 7)
-- Average duration: 2.3 min
-- Total execution time: 1.27 hours
+- Total plans completed: 35 (v1.0: 27, v1.2: 8)
+- Average duration: 2.5 min
+- Total execution time: 1.44 hours
 
 **By Phase:**
 
@@ -39,8 +39,10 @@ Progress: [███████████████████████
 | 9 | 1 | 1 | 3.0 min |
 | 10 | 3 | 3 | 3.0 min |
 | 11 | 4 | 4 | 4.0 min |
+| 12 | 1 | 1 | 10 min |
 
 **Recent Trend:**
+- Phase 12-01 plan: 10 min (integration bug fixes + rendering regression fix)
 - Phase 11-04 plan: 4 min (gap closure - dynamic dimensions, edge clamping marked acceptable)
 - Phase 11-03 plan: 5 min (includes shader fix)
 - Phase 11-02 plan: 2 min
@@ -53,7 +55,7 @@ Progress: [███████████████████████
 - Phase 7-02 plan: 1 min
 - Phase 7-01 plan: 7 min
 - Phase 6 plans: 06-01 (2 min), 06-02 (2 min), 06-03 (3 min)
-- Trend: v1.2 complete - ready for milestone audit
+- Trend: v1.2 complete + integration bugs fixed - ready for deployment
 
 v1.2 Milestone Decisions:
 - Phase structure compressed from research's 6 phases to 3 phases for "quick" depth
@@ -67,13 +69,15 @@ v1.2 Milestone Decisions:
 - Phase 11-02: Use Camera.getShaderUniforms() MVP matrix for world-to-screen conversion - ensures overlay uses same transformation as point rendering
 - Phase 11-03: Fixed shader type mismatch - u_cursorWorldPos must be vec3 not vec2 (Phase 10-02 bug)
 - Phase 11-04: Use Vue template refs for dynamic overlay dimension measurement - overlay dimensions calculated from actual DOM content, not fixed values
+- Phase 12-01: Fixed integration bugs and rendering regression - Reverted incorrect uniform3f fix, GLSL vec2 implicitly extends to vec3 (x,y,0) which is correct for hover detection
 - v1.2 complete: Point Hover with Tag/Image Display milestone - ready for audit
   - Phase 9: Data Foundation (DATA-01, DATA-02, DATA-03) - Extend types and loaders for optional tag/image columns - Complete
   - Phase 10: GPU Hover Detection (HOVER-01, HOVER-02, HOVER-03) - GPU-based distance threshold with adaptive threshold from JS - Complete
   - Phase 11: Screen Overlay (OVERLAY-01, OVERLAY-02, OVERLAY-03) - Vue overlay for tag/image display with dynamic sizing and corrected edge clamping - Complete
+  - Phase 12: Integration Bug Fixes - Fixed JSON loading, shader uniform regression, edge clamping gap, and removed debug code - Complete
 
 ## Session Continuity
 
-Last session: 2026-02-05
-Stopped at: Completed 11-04: Dynamic overlay dimension calculation
+Last session: 2026-02-06
+Stopped at: Completed 12-01: Integration bug fixes and rendering restoration
 Resume file: None
