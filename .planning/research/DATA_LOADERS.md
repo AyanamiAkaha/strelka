@@ -1312,6 +1312,6 @@ The existing DataProvider interface is well-suited for extension with loader met
 
 ---
 
-*Data loading research for WebGL Clusters Playground*
+*Data loading research for strelka*
 *Researched: February 1, 2026*
 *Next review: After Phase 1 implementation*

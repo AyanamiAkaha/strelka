@@ -1,4 +1,4 @@
-# Project Milestones: WebGL Clusters Playground
+# Project Milestones: strelka
 
 ## v1 Data Loading Capabilities (Shipped: 2026-02-04)
 

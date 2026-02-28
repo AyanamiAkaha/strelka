@@ -1,7 +1,7 @@
 # Domain Pitfalls: Point Hover with Buffer-Based Communication
 
 **Domain:** WebGL Point Cloud Hover with Tag/Image Display
-**Project:** WebGL Clusters Playground v1.2
+**Project:** strelka v1.2
 **Researched:** February 4, 2026
 **Overall confidence:** HIGH
 
@@ -1243,6 +1243,6 @@ Canvas resize triggers multiple events and state changes:
 
 ---
 
-*Pitfalls research for: WebGL Clusters Playground v1.2 Point Hover with Tag/Image Display*
+*Pitfalls research for: strelka v1.2 Point Hover with Tag/Image Display*
 *Researched: February 4, 2026*
 *Focus: Buffer-based communication, 30M point performance, coordinate transformation, accessibility*

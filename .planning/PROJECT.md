@@ -1,8 +1,8 @@
-# WebGL Clusters Playground
+# strelka
 
 ## What This Is
 
-A WebGL clusters playground that loads and visualizes large 3D point datasets (100K-500K points) with cluster highlighting and freeflight camera controls. Built with Vue 3, TypeScript, and pure WebGL.
+A 3D point cloud visualization app that loads and visualizes large embedding datasets (100K-500K points) with cluster highlighting and freeflight camera controls. Built with Vue 3, TypeScript, and pure WebGL.
 
 ## Core Value
 
@@ -12,7 +12,7 @@ Users can load and explore real point cluster data in 3D with interactive camera
 
 **Shipped:** v1 — Data Loading Capabilities (2026-02-04)
 
-The WebGL Clusters Playground successfully delivers data loading capabilities for JSON and SQLite formats, quaternion-based camera controls, cluster highlighting, and comprehensive error handling.
+strelka successfully delivers data loading capabilities for JSON and SQLite formats, quaternion-based camera controls, cluster highlighting, and comprehensive error handling.
 
 **Delivered features:**
 - Quaternion-based camera rotation (eliminated gimbal lock at extreme angles)

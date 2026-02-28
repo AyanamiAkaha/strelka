@@ -5,7 +5,7 @@
 ## Directory Layout
 
 ```
-webgl-clusters-playground/
+strelka/
 ├── index.html                    # HTML entry point with #app mount point
 ├── package.json                  # Dependencies and npm scripts
 ├── vite.config.ts                # Vite build configuration

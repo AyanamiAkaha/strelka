@@ -81,6 +81,9 @@
         <div class="path-hint">Optional base path for displayed images</div>
       </div>
     </div>
+    <div class="about-section">
+      <button class="about-btn" @click="emit('show-about')">About</button>
+    </div>
   </div>
 </template>
 
@@ -94,7 +97,8 @@ const emit = defineEmits<{
   'file-selected': [file: File],
   'table-selected': [tableName: string],
   'switch-to-generated': [],
-  'switch-to-loaded': []
+  'switch-to-loaded': [],
+  'show-about': []
 }>()
 
 const props = defineProps<{
@@ -300,5 +304,29 @@ const clusterDisplayValue = computed(() => {
   font-size: 10px;
   font-family: monospace;
   font-style: italic;
+}
+
+.about-section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.about-btn {
+  background: rgba(0, 0, 0, 0.8);
+  color: #4CAF50;
+  border: 1px solid #4CAF50;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: monospace;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  width: 100%;
+}
+
+.about-btn:hover {
+  background: rgba(76, 175, 80, 0.2);
+  color: #69F0AE;
 }
 </style>

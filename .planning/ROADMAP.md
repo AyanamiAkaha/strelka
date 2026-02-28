@@ -1,8 +1,8 @@
-# Roadmap: WebGL Clusters Playground
+# Roadmap: strelka
 
 ## Overview
 
-WebGL Clusters Playground — 3D point cloud visualization with data loading, camera controls, cluster highlighting, and point hover with metadata display.
+strelka — 3D point cloud visualization with data loading, camera controls, cluster highlighting, and point hover with metadata display.
 
 ## Milestones
 

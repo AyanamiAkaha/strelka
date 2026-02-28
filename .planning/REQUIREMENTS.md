@@ -1,4 +1,4 @@
-# Requirements: WebGL Clusters Playground
+# Requirements: strelka
 
 **Defined:** 2026-02-04
 **Core Value:** Users can load and explore real point cluster data in 3D with interactive camera controls and point hover metadata display

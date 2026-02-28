@@ -1,13 +1,13 @@
 # Architecture Research: Point Hover with Tag/Image Display
 
-**Domain:** WebGL Clusters Playground - Vue 3 + WebGL
+**Domain:** strelka - Vue 3 + WebGL
 **Research Type:** Architecture Integration
 **Researched:** February 4, 2026
 **Overall Confidence:** HIGH
 
 ## Executive Summary
 
-Point hover with tag/image display can be integrated into the existing WebGL Clusters Playground architecture using buffer-based communication between WebGL and JavaScript. The recommended approach uses **GPU-based distance detection** combined with **readPixels** to identify the hovered point, followed by **3D-to-2D projection** to position the Vue/TS overlay component. This maintains the existing component hierarchy (WebGLPlayground as parent, ControlsOverlay as sibling) and introduces a new HoverOverlay component for displaying tags/images.
+Point hover with tag/image display can be integrated into the existing strelka architecture using buffer-based communication between WebGL and JavaScript. The recommended approach uses **GPU-based distance detection** combined with **readPixels** to identify the hovered point, followed by **3D-to-2D projection** to position the Vue/TS overlay component. This maintains the existing component hierarchy (WebGLPlayground as parent, ControlsOverlay as sibling) and introduces a new HoverOverlay component for displaying tags/images.
 
 ## Key Findings
 
@@ -1226,5 +1226,5 @@ const renderHoverDetection = () => {
 
 ---
 
-*Architecture research for: WebGL Clusters Playground v1.2 Point Hover with Tag/Image Display*
+*Architecture research for: strelka v1.2 Point Hover with Tag/Image Display*
 *Researched: February 4, 2026*

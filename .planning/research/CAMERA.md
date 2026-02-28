@@ -1,6 +1,6 @@
-# Camera Rotation Research: WebGL Clusters Playground
+# Camera Rotation Research: strelka
 
-**Project:** WebGL Clusters Playground
+**Project:** strelka
 **Researched:** 2026-02-01
 **Overall confidence:** HIGH (based on codebase analysis + authoritative sources)
 

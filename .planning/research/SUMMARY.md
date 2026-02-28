@@ -1,6 +1,6 @@
 # Project Research Summary
 
-**Project:** WebGL Clusters Playground — v1.2 Point Hover with Tag/Image Display
+**Project:** strelka — v1.2 Point Hover with Tag/Image Display
 **Domain:** WebGL Point Cloud Visualization + Vue 3 UI
 **Researched:** February 4, 2026
 **Confidence:** HIGH

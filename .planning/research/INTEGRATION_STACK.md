@@ -248,5 +248,5 @@ const result = await worker.db.exec('SELECT x, y, z, cluster FROM points LIMIT 1
 - [Vite Assets Documentation](https://vitejs.dev/guide/assets.html) — Verified WASM handling, worker imports, static asset bundling with Vite 5.0
 
 ---
-*Stack research for WebGL Clusters Playground data loading integration*
+*Stack research for strelka data loading integration*
 *Researched: February 1, 2026*

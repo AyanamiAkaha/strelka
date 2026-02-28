@@ -14,6 +14,7 @@
       @table-selected="handleTableSelected"
       @switch-to-generated="switchToGenerated"
       @switch-to-loaded="switchToLoaded"
+      @show-about="aboutModalVisible = true"
       :is-loading="isLoading"
       :current-file="currentFile"
       :current-data-source="currentDataSource"
@@ -36,6 +37,8 @@
       :screen-y="overlayScreenPos.y"
       :visible="overlayVisible"
     />
+
+    <AboutModal v-if="aboutModalVisible" @close="aboutModalVisible = false" />
 
     <div v-if="error" class="error-overlay">
       <h3>WebGL Error</h3>
@@ -71,6 +74,7 @@ import WebGLCanvas from '@/components/WebGLCanvas.vue'
 import ControlsOverlay from '@/components/ControlsOverlay.vue'
 import DebugInfo from '@/components/DebugInfo.vue'
 import PointOverlay from '@/components/PointOverlay.vue'
+import AboutModal from '@/components/AboutModal.vue'
 import { Camera } from '@/core/Camera'
 import { DataProvider, PointData } from '@/core/DataProvider'
 import { ShaderManager } from '@/core/ShaderManager'
@@ -95,6 +99,7 @@ const error = ref<string>('')
 const camera = ref<Camera>()
 const pointCount = ref(0)
 const fps = ref(0)
+const aboutModalVisible = ref(false)
 
 // Error array for multiple error management
 const errors = ref<ErrorInfo[]>([])

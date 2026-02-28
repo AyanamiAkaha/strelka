@@ -491,5 +491,5 @@ document.addEventListener('keydown', (e) => {
 
 ---
 
-*Feature research for: WebGL Clusters Playground — v1.2 Point Hover with Tag/Image Display*
+*Feature research for: strelka — v1.2 Point Hover with Tag/Image Display*
 *Researched: February 4, 2026*

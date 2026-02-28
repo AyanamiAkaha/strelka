@@ -1,6 +1,6 @@
 # Technology Stack for Point Hover Detection
 
-**Project:** WebGL Clusters Playground
+**Project:** strelka
 **Milestone:** v1.2 - Point Hover with Tag/Image Display
 **Researched:** 2026-02-04
 **Overall confidence:** HIGH
@@ -446,6 +446,6 @@ const props = defineProps<{
 
 ---
 
-**Research for:** WebGL Clusters Playground - v1.2 Point Hover Detection
+**Research for:** strelka - v1.2 Point Hover Detection
 **Stack additions:** GPU picking shader, 2D index+depth buffer, gl-matrix projection, Vue overlay
 **No new npm packages needed** - All additions use existing stack
