@@ -15,16 +15,19 @@
       @switch-to-generated="switchToGenerated"
       @switch-to-loaded="switchToLoaded"
       @show-about="aboutModalVisible = true"
+      @show-gamepad-select="gamepadModalVisible = true"
       :is-loading="isLoading"
       :current-file="currentFile"
       :current-data-source="currentDataSource"
       :point-data="pointData"
+      :active-gamepad-name="activeGamepadName"
     />
     <DebugInfo v-if="camera"
       :camera="camera!.toDebugInfo()"
       :point-count="pointCount"
       :fps="fps"
       :hover-debug="hoverDebug"
+      :gamepad-look-speed="gamepadLookSpeed"
     />
 
     <PointOverlay
@@ -39,6 +42,9 @@
     />
 
     <AboutModal v-if="aboutModalVisible" @close="aboutModalVisible = false" />
+    <GamepadSelectModal v-if="gamepadModalVisible" @select="onGamepadSelected" @close="gamepadModalVisible = false" />
+
+    <div v-if="selectionMode === 'center'" class="crosshair">+</div>
 
     <div v-if="error" class="error-overlay">
       <h3>WebGL Error</h3>
@@ -78,8 +84,10 @@ import AboutModal from '@/components/AboutModal.vue'
 import { Camera } from '@/core/Camera'
 import { DataProvider, PointData } from '@/core/DataProvider'
 import { ShaderManager } from '@/core/ShaderManager'
+import { GamepadManager, type GamepadActions } from '@/core/GamepadManager'
+import GamepadSelectModal from '@/components/GamepadSelectModal.vue'
 
-import { highlightedCluster, ppc, imagePathBase } from '@/composables/settings'
+import { highlightedCluster, ppc, imagePathBase, smoothingAmount, selectionMode, invertLookY } from '@/composables/settings'
 
 console.log('WebGLPlayground script setup running...')
 
@@ -107,6 +115,13 @@ const errorPanelExpanded = ref(false)
 
 const isLoading = ref(false)
 const currentFile = ref<File | null>(null)
+
+// Gamepad state
+const gamepadModalVisible = ref(false)
+const activeGamepadIndex = ref<number | null>(null)
+const activeGamepadName = ref<string | null>(null)
+let gamepadManager: GamepadManager | null = null
+const gamepadLookSpeed = ref<number | null>(null)
 
 enum DataSource { GENERATED = 'generated', LOADED = 'loaded' }
 
@@ -204,6 +219,8 @@ watch(ppc, () => regenPoints())
  */
 const onWebGLReady = (gl: WebGL2RenderingContext | WebGLRenderingContext) => {
   camera.value = new Camera()
+  camera.value.smoothingFactor = smoothingAmount.value
+  camera.value.invertY = invertLookY.value
   glCache = gl
   regenPoints()
   setupShaders(gl)
@@ -401,6 +418,35 @@ const switchToLoaded = async () => {
   }
 }
 
+// Smoothing: sync composable value to camera
+watch(smoothingAmount, (val) => {
+  if (camera.value) {
+    camera.value.smoothingFactor = val
+  }
+})
+
+watch(invertLookY, (val) => {
+  if (camera.value) camera.value.invertY = val
+  if (gamepadManager) gamepadManager.invertY = val
+})
+
+const onGamepadSelected = (index: number | null) => {
+  if (index === null) {
+    gamepadManager = null
+    activeGamepadIndex.value = null
+    activeGamepadName.value = null
+    selectionMode.value = 'mouse'
+  } else {
+    gamepadManager = new GamepadManager(index)
+    gamepadManager.invertY = invertLookY.value
+    activeGamepadIndex.value = index
+    // Capture the name at selection time
+    const gamepads = GamepadManager.listGamepads()
+    const gp = gamepads.find(g => g.index === index)
+    activeGamepadName.value = gp?.id ?? `Gamepad ${index}`
+  }
+}
+
 // Old clearLoadError function replaced by clearErrors() from error array system
 const onMouseMove = (event: { deltaX: number, deltaY: number, buttons: number, clientX: number, clientY: number }) => {
   // Track mouse position for hover detection (always update, even without button press)
@@ -435,6 +481,56 @@ const onKeyEvent = (event: { key: string, pressed: boolean }) => {
 const startRenderLoop = () => {
   const render = (timestamp: number) => {
     if (canvasRef.value && camera.value) {
+      // Poll gamepad before camera update (feeds analog input)
+      if (gamepadManager) {
+        const actions = gamepadManager.poll(timestamp)
+        if (actions) {
+          camera.value.setAnalogMovement(actions.moveX, actions.moveY, actions.moveZ)
+          camera.value.setAnalogLook(actions.lookYaw, actions.lookPitch)
+
+          // Speed boost
+          if (actions.fast) camera.value.handleKeyEvent('shift', true)
+          else camera.value.handleKeyEvent('shift', false)
+
+          // Reset
+          if (actions.resetPressed) camera.value.reset()
+
+          // Center selection mode (RB held)
+          selectionMode.value = actions.centerSelect ? 'center' : 'mouse'
+
+          // Cluster change (D-pad left/right)
+          if (actions.clusterChange !== 0 && pointData) {
+            const maxCluster = Math.max(...Array.from(pointData.clusterIds))
+            const next = highlightedCluster.value + actions.clusterChange
+            highlightedCluster.value = Math.max(-2, Math.min(maxCluster, next))
+          }
+
+          // Threshold change (D-pad up/down)
+          if (actions.thresholdChange !== 0 && hoverThresholds.value) {
+            const factor = actions.thresholdChange > 0 ? CAMERA_THRESHOLD_SCROLL_FACTOR : 1 / CAMERA_THRESHOLD_SCROLL_FACTOR
+            const next = hoverThresholds.value.cameraDistThreshold * factor
+            hoverThresholds.value = {
+              ...hoverThresholds.value,
+              cameraDistThreshold: Math.max(CAMERA_THRESHOLD_MIN, Math.min(CAMERA_THRESHOLD_MAX, next))
+            }
+          }
+
+          // Smoothing change (X/Y buttons)
+          if (actions.smoothingChange !== 0) {
+            smoothingAmount.value = Math.max(0, Math.min(20, smoothingAmount.value + actions.smoothingChange))
+          }
+
+          gamepadLookSpeed.value = gamepadManager!.lookSpeed
+        } else {
+          // Gamepad disconnected
+          gamepadManager = null
+          activeGamepadIndex.value = null
+          activeGamepadName.value = null
+          gamepadLookSpeed.value = null
+          selectionMode.value = 'mouse'
+        }
+      }
+
       camera.value.update()
 
       if (hoverThresholds.value && pointData) {
@@ -447,8 +543,13 @@ const startRenderLoop = () => {
           // Cursor in canvas pixel space (origin top-left); matches fragment shader hover radius 30px
           const CURSOR_HOVER_PIXELS = 30
           const rect = canvas.getBoundingClientRect()
-          const cursorCanvasX = lastMouseX.value - rect.left
-          const cursorCanvasY = lastMouseY.value - rect.top
+          // When center selection is active (RB held), pick from canvas center instead of mouse
+          const cursorCanvasX = selectionMode.value === 'center'
+            ? canvas.width / 2
+            : lastMouseX.value - rect.left
+          const cursorCanvasY = selectionMode.value === 'center'
+            ? canvas.height / 2
+            : lastMouseY.value - rect.top
           const glScreenPos = { x: cursorCanvasX, y: canvas.height - cursorCanvasY }
 
           const closest = camera.value.getClosestPoint(
@@ -523,15 +624,6 @@ const startRenderLoop = () => {
             const distToCamera = Math.sqrt(
               (cameraPos[0] - px) ** 2 + (cameraPos[1] - py) ** 2 + (cameraPos[2] - pz) ** 2
             )
-            console.log('Hovered point:', idx, 'tag:', hoveredPointTag.value, 'image:', hoveredPointImage.value, {
-              cursorGLScreen: glScreenPos,
-              cameraWorld: { x: cameraPos[0], y: cameraPos[1], z: cameraPos[2] },
-              cameraDistThreshold: hoverThresholds.value.cameraDistThreshold,
-              cursorDistThreshold: hoverThresholds.value.cursorDistThreshold,
-              pointWorld: { x: px, y: py, z: pz },
-              distToCursor,
-              distToCamera
-            })
           }
         }
 
@@ -636,7 +728,9 @@ function getOverlayDimensions(overlayRef: Ref<InstanceType<typeof PointOverlay> 
           if (hoverThresholds.value && camera.value) {
             const canvas = canvasRef.value.canvasElement
             if (canvas) {
-              const glScreenPos = { x: lastMouseX.value, y: canvas.height - lastMouseY.value }
+              const shaderCursorX = selectionMode.value === 'center' ? canvas.width / 2 : lastMouseX.value
+              const shaderCursorY = selectionMode.value === 'center' ? canvas.height / 2 : canvas.height - lastMouseY.value
+              const glScreenPos = { x: shaderCursorX, y: shaderCursorY }
 
               gl.uniform2f(
                 gl.getUniformLocation(shaderProgram, 'u_cursorGLScreen'),
@@ -732,11 +826,20 @@ const setupBuffers = (gl: WebGL2RenderingContext | WebGLRenderingContext) => {
   gl.bufferData(gl.ARRAY_BUFFER, pointData!.clusterIds, gl.STATIC_DRAW)
 }
 
+// Register gamepad listener early so Firefox shows its permission prompt on page load,
+// not only when the user opens the gamepad modal.
+function onGamepadConnected(_e: GamepadEvent) {
+  // no-op — just having the listener registered triggers Firefox's permission prompt
+}
+
 onMounted(() => {
   console.log('WebGLPlayground mounted!')
+  window.addEventListener('gamepadconnected', onGamepadConnected)
 })
 
 onUnmounted(() => {
+  window.removeEventListener('gamepadconnected', onGamepadConnected)
+
   // WebGL resource cleanup (prevents GPU memory leaks)
   const gl = glCache
   if (!gl) return
@@ -779,6 +882,19 @@ onUnmounted(() => {
   position: relative;
   width: 100%;
   height: 100%;
+}
+
+.crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: rgba(76, 175, 80, 0.6);
+  font-size: 32px;
+  font-family: monospace;
+  pointer-events: none;
+  z-index: 50;
+  user-select: none;
 }
 
 .error-overlay {

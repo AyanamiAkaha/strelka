@@ -8,6 +8,7 @@
       <div>Rot: {{ formatRotation(camera.rotation) }}</div>
       <div>Zoom: {{ camera.distance.toFixed(1) }}</div>
     </div>
+    <div v-if="gamepadLookSpeed != null">GP look: {{ gamepadLookSpeed.toFixed(1) }}</div>
     <div v-if="hoverDebug" class="hover-debug">
       <h5>Cursor / Hover</h5>
       <div>Screen: ({{ hoverDebug.cursorScreen.x }}, {{ hoverDebug.cursorScreen.y }})</div>
@@ -63,6 +64,7 @@ interface Props {
   pointCount: number
   fps: number
   hoverDebug?: HoverDebugInfo | null
+  gamepadLookSpeed?: number | null
 }
 
 defineProps<Props>()

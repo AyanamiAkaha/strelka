@@ -1,13 +1,21 @@
 /**
- * Browsers block file:// URLs in <img> when the page is served over http(s).
- * In dev we proxy file:// through the Vite server at /local-image?path=...
- * so images load. Use this as the img src when the raw URL is file://.
+ * Resolve image URLs for display.
+ *
+ * - http:// / https:// → pass through unchanged
+ * - file://             → strip prefix, proxy via /local-image?path=...
+ * - everything else     → treat as local path, proxy via /local-image?path=...
+ *
+ * The /local-image proxy is provided by local-image-plugin.ts (Vite dev server
+ * middleware). In production builds the proxy does not exist — local paths will 404.
  */
 export function localImageSrc(url: string | null): string {
   if (url == null || url === '') return ''
-  if (url.startsWith('file://')) {
-    const path = url.slice(7) // strip "file://"
-    return `${typeof window !== 'undefined' ? window.location.origin : ''}/local-image?path=${encodeURIComponent(path)}`
+  // Pass through remote URLs
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url
   }
-  return url
+  // Strip file:// prefix if present
+  const localPath = url.startsWith('file://') ? url.slice(7) : url
+  const origin = typeof window !== 'undefined' ? window.location.origin : ''
+  return `${origin}/local-image?path=${encodeURIComponent(localPath)}`
 }

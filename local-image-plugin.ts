@@ -4,9 +4,10 @@ import path from 'node:path'
 
 /**
  * Dev-only plugin: serve local files at GET /local-image?path=<encoded path>
- * so <img> can display file:// URLs (browsers block file:// from http(s) pages).
+ * so <img> can display local images (browsers block file:// from http(s) pages).
  *
- * Path must be absolute. Set LOCAL_IMAGE_BASE to restrict (e.g. /home/user/pics);
+ * Supports absolute and relative paths (relative resolved against cwd).
+ * Set LOCAL_IMAGE_BASE to restrict (e.g. /home/user/pics);
  * if unset, any path is allowed (dev only).
  */
 export function localImagePlugin(): Plugin {
@@ -26,18 +27,14 @@ export function localImagePlugin(): Plugin {
           }
           let filePath: string
           try {
-            filePath = path.normalize(decodeURIComponent(raw))
+            // resolve() handles both absolute and relative paths (relative → cwd-based)
+            filePath = path.resolve(decodeURIComponent(raw))
           } catch {
             res.statusCode = 400
             res.end('invalid path')
             return
           }
-          if (filePath.includes('..')) {
-            res.statusCode = 403
-            res.end('path not allowed')
-            return
-          }
-          if (allowedBase && !path.resolve(filePath).startsWith(path.resolve(allowedBase))) {
+          if (allowedBase && !filePath.startsWith(path.resolve(allowedBase))) {
             res.statusCode = 403
             res.end('path outside allowed base')
             return

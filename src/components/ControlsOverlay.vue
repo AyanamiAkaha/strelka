@@ -70,15 +70,56 @@
       <label for="slider-nclusters">number of clusters</label>
       -->
       
+      <div class="smoothing-control">
+        <h5>Camera Smoothing</h5>
+        <div class="smoothing-row">
+          <input
+            type="range"
+            v-model.number="smoothingAmount"
+            min="0"
+            max="20"
+            step="1"
+            class="smoothing-slider"
+          />
+          <span class="smoothing-value">{{ smoothingAmount === 0 ? 'Off' : smoothingAmount }}</span>
+        </div>
+      </div>
+
+      <div class="invert-y-control">
+        <h5>Look Y-Axis</h5>
+        <div class="data-source-buttons">
+          <button
+            class="data-source-btn"
+            :class="{ active: !invertLookY }"
+            @click="invertLookY = false"
+          >Normal</button>
+          <button
+            class="data-source-btn"
+            :class="{ active: invertLookY }"
+            @click="invertLookY = true"
+          >Inverted</button>
+        </div>
+      </div>
+
+      <div class="gamepad-control">
+        <h5>Gamepad</h5>
+        <button class="gamepad-btn" @click="emit('show-gamepad-select')">
+          {{ activeGamepadName ? 'Change Gamepad' : 'Select Gamepad' }}
+        </button>
+        <div v-if="activeGamepadName" class="gamepad-active">
+          {{ activeGamepadName }}
+        </div>
+      </div>
+
       <div class="image-path-control">
         <h5>Image Path Base</h5>
         <input
           type="text"
           v-model="imagePathBase"
-          placeholder="Optional base path for images"
+          placeholder="e.g. /home/user/images/"
           class="path-input"
         />
-        <div class="path-hint">Optional base path for displayed images</div>
+        <div class="path-hint">Absolute path, relative path, or URL. Trailing slash required.</div>
       </div>
     </div>
     <div class="about-section">
@@ -89,7 +130,7 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import { highlightedCluster, ppc, imagePathBase } from '@/composables/settings'
+import { highlightedCluster, ppc, imagePathBase, smoothingAmount, invertLookY } from '@/composables/settings'
 import { type PointData } from '@/core/DataProvider'
 import DataLoadControl from './DataLoadControl.vue'
 
@@ -98,7 +139,8 @@ const emit = defineEmits<{
   'table-selected': [tableName: string],
   'switch-to-generated': [],
   'switch-to-loaded': [],
-  'show-about': []
+  'show-about': [],
+  'show-gamepad-select': []
 }>()
 
 const props = defineProps<{
@@ -106,6 +148,7 @@ const props = defineProps<{
   currentFile: File | null
   currentDataSource: 'generated' | 'loaded'
   pointData: PointData | null
+  activeGamepadName: string | null
 }>()
 
 const ppcMagnitude = ref(4)
@@ -267,6 +310,91 @@ const clusterDisplayValue = computed(() => {
 }
 .cluster-display[data-value^="Cluster"] {
   color: #4CAF50;  /* Green for clusters */
+}
+
+.smoothing-control {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.smoothing-control h5 {
+  margin: 0 0 6px 0;
+  color: #4CAF50;
+  font-size: 11px;
+  font-family: monospace;
+}
+
+.smoothing-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.smoothing-slider {
+  flex: 1;
+  cursor: pointer;
+  accent-color: #4CAF50;
+}
+
+.smoothing-value {
+  color: white;
+  font-size: 11px;
+  font-family: monospace;
+  min-width: 24px;
+  text-align: right;
+}
+
+.invert-y-control {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.invert-y-control h5 {
+  margin: 0 0 6px 0;
+  color: #4CAF50;
+  font-size: 11px;
+  font-family: monospace;
+}
+
+.gamepad-control {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.gamepad-control h5 {
+  margin: 0 0 6px 0;
+  color: #4CAF50;
+  font-size: 11px;
+  font-family: monospace;
+}
+
+.gamepad-btn {
+  background: rgba(0, 0, 0, 0.8);
+  color: #4CAF50;
+  border: 1px solid #4CAF50;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: monospace;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  width: 100%;
+}
+
+.gamepad-btn:hover {
+  background: rgba(76, 175, 80, 0.2);
+  color: #69F0AE;
+}
+
+.gamepad-active {
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 10px;
+  font-family: monospace;
+  word-break: break-word;
 }
 
 .image-path-control {

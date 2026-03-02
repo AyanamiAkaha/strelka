@@ -44,7 +44,7 @@ export class Camera {
   private orientation: quat
   /** Distance from look target */
   public distance: number
-  
+
   // Camera settings
   /** Base movement speed */
   public moveSpeed: number = 5.0
@@ -52,7 +52,9 @@ export class Camera {
   public fastMoveMultiplier: number = 3.0
   /** Mouse rotation sensitivity */
   public mouseSensitivity: number = 0.0014  // Reduced from 0.002 to match original speed (~30% slower)
-  
+  /** Invert Y-axis for mouse look (false = normal, true = inverted/flight-stick) */
+  public invertY: boolean = false
+
   // Projection settings
   /** Vertical field of view in degrees */
   public fov: number = 45
@@ -60,7 +62,22 @@ export class Camera {
   public near: number = 0.1
   /** Far clipping plane distance */
   public far: number = 100.0
-  
+
+  // Smoothing state
+  /** EMA smoothing factor: 0 = instant (off), higher = smoother. Formula: 1 - exp(-factor * dt) */
+  public smoothingFactor: number = 0
+  private velocity: vec3
+  private targetVelocity: vec3
+  /** Accumulated yaw delta from mouse/gamepad (radians) */
+  private pendingYaw: number = 0
+  /** Accumulated pitch delta from mouse/gamepad (radians) */
+  private pendingPitch: number = 0
+
+  // Analog input from gamepad (set externally each frame)
+  private analogMove: vec3
+  private analogYaw: number = 0
+  private analogPitch: number = 0
+
   // Control state
   private controls: CameraControls = {
     forward: false,
@@ -71,12 +88,15 @@ export class Camera {
     down: false,
     fast: false
   }
-  
+
   constructor() {
     this.position = vec3.create()
     vec3.set(this.position, 0, 0, 10)
     this.orientation = quat.create()
     this.distance = 10
+    this.velocity = vec3.create()
+    this.targetVelocity = vec3.create()
+    this.analogMove = vec3.create()
   }
 
   /**
@@ -222,18 +242,24 @@ export class Camera {
    * @returns void
    */
   handleMouseMove(deltaX: number, deltaY: number): void {
-    const pitchChange = -deltaY * this.mouseSensitivity   // Negate to fix inverted vertical
+    const pitchChange = (this.invertY ? 1 : -1) * deltaY * this.mouseSensitivity
     const yawChange = -deltaX * this.mouseSensitivity      // Negate to fix inverted horizontal
 
-    // Apply pitch rotation
-    const temp = quat.create()
-    quat.rotateX(temp, this.orientation, pitchChange)
-
-    // Apply yaw rotation to result (order matters: X then Y)
-    quat.rotateY(this.orientation, temp, yawChange)
-
-    // Normalize periodically to prevent quaternion drift
-    quat.normalize(this.orientation, this.orientation)
+    if (this.smoothingFactor > 0) {
+      // Accumulate deltas — applied gradually in update()
+      this.pendingPitch += pitchChange
+      this.pendingYaw += yawChange
+      // Cap to prevent runaway accumulation from rapid mouse movement
+      const MAX_PENDING = 1.0 // ~57 degrees
+      this.pendingPitch = Math.max(-MAX_PENDING, Math.min(MAX_PENDING, this.pendingPitch))
+      this.pendingYaw = Math.max(-MAX_PENDING, Math.min(MAX_PENDING, this.pendingYaw))
+    } else {
+      // Instant (current behavior)
+      const temp = quat.create()
+      quat.rotateX(temp, this.orientation, pitchChange)
+      quat.rotateY(this.orientation, temp, yawChange)
+      quat.normalize(this.orientation, this.orientation)
+    }
   }
 
   /**
@@ -249,35 +275,110 @@ export class Camera {
    * @param deltaTime - Time since last frame in seconds (default: 1/60)
    * @returns void
    */
+  /**
+   * Set analog movement input from gamepad (local camera space).
+   * Values should be in [-1, 1] range. Applied additively with keyboard.
+   */
+  setAnalogMovement(x: number, y: number, z: number): void {
+    vec3.set(this.analogMove, x, y, z)
+  }
+
+  /**
+   * Set analog look input from gamepad (radians/sec).
+   * Applied additively with mouse when smoothing is on, or directly when off.
+   */
+  setAnalogLook(yaw: number, pitch: number): void {
+    this.analogYaw = yaw
+    this.analogPitch = pitch
+  }
+
   update(deltaTime: number = 1/60): void {
-    const speed = this.moveSpeed * deltaTime * (this.controls.fast ? this.fastMoveMultiplier : 1)
+    const speedMultiplier = this.controls.fast ? this.fastMoveMultiplier : 1
 
     // Get movement vectors from quaternion orientation
     const forward = this.getForward()
     const right = this.getRight()
     const up = this.getUp()
 
-    // Apply movement - forward/backward moves in camera's look direction
-    if (this.controls.forward) {
-      vec3.add(this.position, this.position, vec3.scale(vec3.create(), forward, speed))
-    }
-    if (this.controls.backward) {
-      vec3.sub(this.position, this.position, vec3.scale(vec3.create(), forward, speed))
-    }
-    if (this.controls.right) {
-      vec3.add(this.position, this.position, vec3.scale(vec3.create(), right, speed))
-    }
-    if (this.controls.left) {
-      vec3.sub(this.position, this.position, vec3.scale(vec3.create(), right, speed))
-    }
-    if (this.controls.up) {
-      vec3.add(this.position, this.position, vec3.scale(vec3.create(), up, speed))
-    }
-    if (this.controls.down) {
-      vec3.sub(this.position, this.position, vec3.scale(vec3.create(), up, speed))
+    // Compute target velocity from keyboard (binary) + gamepad (analog)
+    vec3.set(this.targetVelocity, 0, 0, 0)
+
+    // Keyboard input (binary -1/0/1 per axis)
+    let kbX = 0, kbY = 0, kbZ = 0
+    if (this.controls.forward)  kbZ += 1
+    if (this.controls.backward) kbZ -= 1
+    if (this.controls.right)    kbX += 1
+    if (this.controls.left)     kbX -= 1
+    if (this.controls.up)       kbY += 1
+    if (this.controls.down)     kbY -= 1
+
+    // Combine keyboard + analog gamepad input
+    const inputX = kbX + this.analogMove[0]
+    const inputY = kbY + this.analogMove[1]
+    const inputZ = kbZ + this.analogMove[2]
+
+    // Build target velocity in world space
+    vec3.scaleAndAdd(this.targetVelocity, this.targetVelocity, forward, inputZ * this.moveSpeed * speedMultiplier)
+    vec3.scaleAndAdd(this.targetVelocity, this.targetVelocity, right, inputX * this.moveSpeed * speedMultiplier)
+    vec3.scaleAndAdd(this.targetVelocity, this.targetVelocity, up, inputY * this.moveSpeed * speedMultiplier)
+
+    // Handle analog look (gamepad sticks)
+    if (this.smoothingFactor > 0) {
+      this.pendingPitch += this.analogPitch * deltaTime
+      this.pendingYaw += this.analogYaw * deltaTime
+      const MAX_PENDING = 1.0
+      this.pendingPitch = Math.max(-MAX_PENDING, Math.min(MAX_PENDING, this.pendingPitch))
+      this.pendingYaw = Math.max(-MAX_PENDING, Math.min(MAX_PENDING, this.pendingYaw))
+    } else if (this.analogYaw !== 0 || this.analogPitch !== 0) {
+      // Instant analog look (no smoothing)
+      const tempQ = quat.create()
+      quat.rotateX(tempQ, this.orientation, this.analogPitch * deltaTime)
+      quat.rotateY(this.orientation, tempQ, this.analogYaw * deltaTime)
+      quat.normalize(this.orientation, this.orientation)
     }
 
-    // No matrix updates needed - shader handles everything!
+    if (this.smoothingFactor > 0) {
+      // EMA smoothing: alpha = 1 - exp(-smoothingFactor * dt) is frame-rate independent
+      const alpha = 1 - Math.exp(-this.smoothingFactor * deltaTime)
+
+      // Smooth velocity toward target
+      vec3.lerp(this.velocity, this.velocity, this.targetVelocity, alpha)
+
+      // Snap to zero to prevent infinite drift
+      if (vec3.length(this.velocity) < 0.001 && vec3.length(this.targetVelocity) < 0.001) {
+        vec3.set(this.velocity, 0, 0, 0)
+      }
+
+      // Apply smoothed velocity
+      vec3.scaleAndAdd(this.position, this.position, this.velocity, deltaTime)
+
+      // Apply smoothed rotation from pending deltas
+      if (Math.abs(this.pendingPitch) > 0.00001 || Math.abs(this.pendingYaw) > 0.00001) {
+        const rotAlpha = 1 - Math.exp(-this.smoothingFactor * deltaTime)
+        const appliedPitch = this.pendingPitch * rotAlpha
+        const appliedYaw = this.pendingYaw * rotAlpha
+
+        const tempQ = quat.create()
+        quat.rotateX(tempQ, this.orientation, appliedPitch)
+        quat.rotateY(this.orientation, tempQ, appliedYaw)
+        quat.normalize(this.orientation, this.orientation)
+
+        this.pendingPitch -= appliedPitch
+        this.pendingYaw -= appliedYaw
+
+        // Snap to zero
+        if (Math.abs(this.pendingPitch) < 0.00001) this.pendingPitch = 0
+        if (Math.abs(this.pendingYaw) < 0.00001) this.pendingYaw = 0
+      }
+    } else {
+      // No smoothing: instant movement (original behavior)
+      vec3.scaleAndAdd(this.position, this.position, this.targetVelocity, deltaTime)
+    }
+
+    // Reset analog input (must be set each frame by caller)
+    vec3.set(this.analogMove, 0, 0, 0)
+    this.analogYaw = 0
+    this.analogPitch = 0
   }
 
   /**
@@ -289,6 +390,13 @@ export class Camera {
     vec3.set(this.position, 0, 0, 10)
     quat.identity(this.orientation)
     this.distance = 10
+    vec3.set(this.velocity, 0, 0, 0)
+    vec3.set(this.targetVelocity, 0, 0, 0)
+    this.pendingYaw = 0
+    this.pendingPitch = 0
+    vec3.set(this.analogMove, 0, 0, 0)
+    this.analogYaw = 0
+    this.analogPitch = 0
   }
 
   /**
