@@ -48,6 +48,31 @@ The camera uses quaternion-based 6DOF (six degrees of freedom) freeflight contro
 
 Click on the canvas first to capture mouse input. The camera supports full 360-degree rotation without gimbal lock.
 
+## Gamepad Controls
+
+Standard mapping gamepads (XInput-compatible) are supported. Click the gamepad button in the controls overlay to select a connected gamepad.
+
+| Input | Action |
+|-------|--------|
+| **Left stick** | Move left/right/up/down |
+| **Right stick** | Look around (yaw/pitch) |
+| **LT (left trigger)** | Move backward |
+| **RT (right trigger)** | Move forward |
+| **LB (left bumper)** | Speed boost |
+| **RB (right bumper)** | Center selection mode (hold) |
+| **L3 (left stick click)** | Reset camera position |
+| **D-pad left/right** | Change highlighted cluster |
+| **D-pad up/down** | Adjust hover detection threshold |
+| **A button** | Decrease look speed |
+| **B button** | Increase look speed |
+| **X button** | Increase smoothing |
+| **Y button** | Decrease smoothing |
+
+**Notes:**
+- Movement and look are analog-sensitive (partial stick/trigger input = slower movement)
+- Press any button on your gamepad to make it visible to the browser
+- Non-standard mapping gamepads show a warning in the selection modal
+
 ## Data Formats
 
 The application accepts two data formats: JSON and SQLite.

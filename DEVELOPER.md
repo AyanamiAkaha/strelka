@@ -31,14 +31,16 @@ src/
 │   ├── ControlsOverlay.vue    # Settings panel
 │   ├── DataLoadControl.vue    # File picker + drag-and-drop
 │   ├── DebugInfo.vue          # FPS, camera, hover debug
+│   ├── GamepadSelectModal.vue # Gamepad selection UI
 │   └── PointOverlay.vue       # Hover metadata display
 ├── core/               # Core Layer — Pure TypeScript, no Vue
 │   ├── Camera.ts              # Quaternion 6DOF camera (gl-matrix)
+│   ├── GamepadManager.ts      # Gamepad input processing
 │   ├── ShaderManager.ts       # Shader compilation, GPU setup
 │   ├── DataProvider.ts        # Point data generation + loading
 │   └── validators.ts          # JSON/SQLite data validation
 ├── composables/        # State Layer — Shared reactive state
-│   └── settings.ts            # highlightedCluster, ppc, imagePathBase
+│   └── settings.ts            # highlightedCluster, ppc, imagePathBase, gamepadIndex
 └── main.ts             # Entry point
 ```
 
@@ -46,12 +48,12 @@ src/
 
 ```
 User Input → WebGLCanvas (events) → WebGLPlayground (coordination)
-  → Camera / ShaderManager / DataProvider → WebGL GPU → Canvas
+  → Camera / ShaderManager / DataProvider / GamepadManager → WebGL GPU → Canvas
 ```
 
 **Initialization:** Browser → index.html → main.ts → Vue app → WebGLPlayground → WebGLCanvas emits `webgl-ready` → Camera, ShaderManager, DataProvider created → buffers uploaded → render loop starts.
 
-**Per frame:** Camera.update() → getShaderUniforms(aspect) → set uniforms → bind buffers → gl.drawArrays(gl.POINTS) → FPS counter.
+**Per frame:** GamepadManager.poll() → Camera.handleGamepadActions() → Camera.update() → getShaderUniforms(aspect) → set uniforms → bind buffers → gl.drawArrays(gl.POINTS) → FPS counter.
 
 **Settings change:** Composable ref updates → watch() triggers → DataProvider regenerates data → setupBuffers() uploads to GPU → next frame renders new data.
 
@@ -141,9 +143,25 @@ The camera uses gl-matrix `quat`/`vec3`/`mat4` for rotation. Quaternion rotation
 Key methods in `Camera.ts`:
 - `handleMouseMove(deltaX, deltaY)` — applies yaw/pitch rotation via quaternion multiplication
 - `handleKeyEvent(key, pressed)` — tracks WASD/QE key state
+- `handleGamepadActions(actions)` — applies gamepad input for movement and look
 - `update()` — applies movement in camera-local coordinates
 - `getShaderUniforms(aspect)` — returns pre-computed view and MVP matrices
 - `worldToScreen(worldPos, width, height)` — projects 3D point to screen coordinates
+
+### Gamepad Manager
+
+The `GamepadManager.ts` class reads gamepad input and returns structured actions. No polling occurs unless a gamepad index is set.
+
+Key concepts:
+- Uses the standard gamepad mapping (XInput-compatible)
+- Polling via `poll()` returns a `GamepadActions` object with analog movement/look values
+- Edge detection for button presses (reset, cluster change, threshold change, smoothing)
+- Dead zone handling for analog sticks
+
+Key methods:
+- `setGamepadIndex(index)` — enable polling for a specific gamepad
+- `poll()` — read current gamepad state and return actions
+- `getConnectedGamepads()` — static method to list available gamepads
 
 ### Shader Pipeline
 
@@ -194,6 +212,7 @@ The `u_hilighted_cluster` uniform is updated every frame. Non-highlighted cluste
 - **FPS counter**: Displayed in the DebugInfo overlay (top-left)
 - **Camera debug**: Position, rotation, thresholds shown in DebugInfo
 - **Hover debug**: Cursor position, hovered point index, distances shown in DebugInfo
+- **Gamepad debug**: Selected gamepad index shown in DebugInfo when active
 - **Console logs**: Camera state, hovered point details, WebGL errors logged to console
 - **WebGL Inspector**: Browser extensions (Spector.js) can capture draw calls and inspect GPU state
 - **Shader errors**: Compilation failures are thrown as exceptions with the shader info log

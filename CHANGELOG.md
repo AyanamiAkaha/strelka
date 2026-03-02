@@ -4,6 +4,20 @@ All notable changes to this project are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.3.0] - 2026-03-03
+
+### Added
+- Gamepad support for camera control (standard mapping gamepads)
+- Left stick: move left/right/up/down, right stick: look yaw/pitch
+- LT/RT: move backward/forward with analog sensitivity
+- LB: speed boost, RB: center selection mode
+- D-pad: cluster navigation and threshold adjustment
+- A/B buttons: decrease/increase look speed
+- X/Y buttons: increase/decrease smoothing
+- L3: reset camera position
+- Gamepad selection modal with button mapping diagram
+- Gamepad debug info in DebugInfo overlay
+
 ## [1.2.0] - 2026-02-06
 
 ### Added
